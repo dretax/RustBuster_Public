@@ -1,0 +1,18 @@
+{
+  "Version": "2.1.1",
+  "Verify": {
+    "Assembly-CSharp.dll": "rust_Data\\Managed",
+    "AgileDotNet.VMRuntime.dll": "rust_Data\\Managed",
+    "UnityEngine.dll": "rust_Data\\Managed",
+    "RustBuster2016.dll": "rust_Data\\Managed",
+    "mono.dll": "rust_Data\\Mono",
+    "LZ4.dll": "rust_Data\\Managed",
+    "mscorwks.dll": "rust_Data\\Managed",
+    "RustBuster2016Helper.exe": "",
+    "msvcr120.dll": "",
+    "msvcp120.dll": ""
+  },
+  "Delete": {
+    "SSQLib.dll": "rust_Data\\Managed"
+  }
+}

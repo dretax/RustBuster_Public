@@ -1,5 +1,6 @@
 {
   "Version": "2.1.1",
+  "DriverVersion": "1.0.0",
   "Verify": {
     "Assembly-CSharp.dll": "rust_Data\\Managed",
     "AgileDotNet.VMRuntime.dll": "rust_Data\\Managed",

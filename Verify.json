@@ -1,5 +1,5 @@
 {
-  "Version": "2.1.1",
+  "Version": "3.0.0",
   "DriverVersion": "1.0.0",
   "Verify": {
     "Assembly-CSharp.dll": "rust_Data\\Managed",

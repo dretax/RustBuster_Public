@@ -5,7 +5,6 @@
   "LauncherVersion": "1.0.0",
   "Verify": {
     "Assembly-CSharp.dll": "rust_Data\\Managed",
-    "AgileDotNet.VMRuntime.dll": "rust_Data\\Managed",
     "UnityEngine.dll": "rust_Data\\Managed",
     "RustBuster2016.dll": "rust_Data\\Managed",
     "mono.dll": "rust_Data\\Mono",

@@ -64,12 +64,12 @@
 	"steamclient64.dll": "",
 	"tier0_s64.dll": "",
 	"vstdlib_s64.dll": "",
-	"reaperdriver_amd64.cat.enc": "",
-    "ReaperDriver_amd64.inf.enc": "",
-    "ReaperDriver_amd64.sys.enc": "",
-    "reaperdriver_arm64.cat.enc": "",
-    "ReaperDriver_arm64.inf.enc": "",
-    "ReaperDriver_arm64.sys.enc": ""
+	"reaperdriver_amd64.cat.enc": "drivers",
+    "ReaperDriver_amd64.inf.enc": "drivers",
+    "ReaperDriver_amd64.sys.enc": "drivers",
+    "reaperdriver_arm64.cat.enc": "drivers",
+    "ReaperDriver_arm64.inf.enc": "drivers",
+    "ReaperDriver_arm64.sys.enc": "drivers"
   },
   "Delete": {
     "SSQLib.dll": "rust_Data\\Managed",

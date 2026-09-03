@@ -1,8 +1,8 @@
 {
-  "Version": "3.0.0",
-  "DriverVersionArm64": "18.50.35.879",
-  "DriverVersionAmd64": "18.50.21.896",
-  "LauncherVersion": "1.0.0",
+  "Version": "3.0.1",
+  "DriverVersionArm64": "21.10.47.939",
+  "DriverVersionAmd64": "21.11.7.214",
+  "LauncherVersion": "1.0.1",
   "Verify": {
     "Assembly-CSharp.dll": "rust_Data\\Managed",
     "UnityEngine.dll": "rust_Data\\Managed",

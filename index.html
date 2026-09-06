@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>RustBuster</title>
+<meta name="description" content="Community tooling for Rust Legacy.">
+<style>
+  body{
+    margin:0;padding:56px 24px 72px;
+    background:#dce3e2;color:#16303a;
+    font:17px/1.6 system-ui,"Segoe UI",sans-serif;
+  }
+  main{max-width:33rem;margin:0 auto}
+  h1{font:600 1.9rem/1.2 system-ui,sans-serif;margin:0 0 14px;letter-spacing:-.01em}
+  h2{font:600 1.05rem/1.3 system-ui,sans-serif;margin:44px 0 10px}
+  p{margin:0 0 14px}
+  a{color:#1d6e8c}
+  a:focus-visible{outline:2px solid #1d6e8c;outline-offset:2px}
+  ul.links{list-style:none;margin:0;padding:0}
+  ul.links li{margin:0 0 6px}
+  section{border-top:1px solid #a8b7b6;margin-top:44px;padding-top:4px}
+  #status{
+    margin:14px 0 0;padding-left:14px;border-left:3px solid #a8b7b6;
+  }
+  #status.good{border-left-color:#1f6b4a}
+  #status.bad{border-left-color:#a8590e;color:#a8590e}
+  dl{margin:18px 0 0;font-size:15px;border-top:1px solid #a8b7b6}
+  dl div{display:flex;justify-content:space-between;gap:16px;padding:8px 0;border-bottom:1px solid #a8b7b6}
+  dt{color:#587179}
+  dd{margin:0;font-family:ui-monospace,monospace;text-align:right}
+  ol{display:none;margin:18px 0 0;padding-left:1.4em;font-size:16px}
+  ol.show{display:block}
+  li{margin:0 0 8px}
+  code{font-family:ui-monospace,monospace;background:#cfd8d7;padding:1px 4px}
+  button{
+    margin:22px 0 0;font:500 15px/1 system-ui,sans-serif;
+    color:#dce3e2;background:#16303a;border:1px solid #16303a;padding:10px 16px;cursor:pointer;
+  }
+  button:hover{background:#1d6e8c;border-color:#1d6e8c}
+  button:focus-visible{outline:2px solid #1d6e8c;outline-offset:3px}
+  button[disabled]{opacity:.5;cursor:default}
+</style>
+</head>
+<body>
+<main>
+  <h1>RustBuster</h1>
+
+  <p>Community tooling for Rust Legacy. Source, releases and issue tracker are on GitHub.</p>
+
+  <ul class="links">
+    <li><a href="https://github.com/dretax/RustBuster_Public">github.com/dretax/RustBuster_Public</a></li>
+    <li><a href="https://github.com/dretax/RustBuster_Public/releases">Releases</a></li>
+    <li><a href="https://github.com/dretax/RustBuster_Public/issues">Report an issue</a></li>
+    <!-- add your Discord invite here -->
+  </ul>
+
+  <section>
+    <h2>Clock accuracy</h2>
+
+    <p>An inaccurate system clock breaks HTTPS connections and logins. This checks yours.</p>
+
+    <p id="status">Checking.</p>
+
+    <dl>
+      <div><dt>Reference</dt><dd id="ref">-</dd></div>
+      <div><dt>This computer</dt><dd id="mine">-</dd></div>
+      <div><dt>Difference</dt><dd id="diff">-</dd></div>
+    </dl>
+
+    <ol id="fix">
+      <li>Open <code>Settings › Time &amp; language › Date &amp; time</code>.</li>
+      <li>Turn on <em>Set time automatically</em>, then press <em>Sync now</em>.</li>
+      <li>If that fails, check the <code>Windows Time</code> service is running, then reboot.</li>
+    </ol>
+
+    <button id="again" type="button">Check again</button>
+  </section>
+</main>
+
+<script>
+(function () {
+  "use strict";
+
+  var $ = function (id) { return document.getElementById(id); };
+
+  function pad(n) { return (n < 10 ? "0" : "") + n; }
+
+  function stamp(ms) {
+    var d = new Date(ms);
+    return d.getUTCFullYear() + "-" + pad(d.getUTCMonth() + 1) + "-" + pad(d.getUTCDate()) +
+      " " + pad(d.getUTCHours()) + ":" + pad(d.getUTCMinutes()) + ":" + pad(d.getUTCSeconds()) + "Z";
+  }
+
+  function gap(ms) {
+    var s = Math.round(Math.abs(ms) / 1000);
+    if (s < 60) return s + (s === 1 ? " second" : " seconds");
+    var m = Math.round(s / 60);
+    if (m < 60) return m + (m === 1 ? " minute" : " minutes");
+    var h = Math.round(m / 6) / 10;
+    return h < 48 ? h + " hours" : Math.round(h / 24) + " days";
+  }
+
+  function check() {
+    $("again").disabled = true;
+    $("status").className = "";
+    $("status").textContent = "Checking.";
+
+    var sent = Date.now();
+
+    fetch("./?c=" + Date.now().toString(16), { cache: "no-store" }).then(function (r) {
+      var header = r.headers.get("Date");
+      if (!header) throw new Error("unavailable");
+
+      var ref = new Date(header).getTime();
+      if (!isFinite(ref)) throw new Error("unavailable");
+
+      var age = parseInt(r.headers.get("Age") || "0", 10);
+      if (isFinite(age) && age > 0 && age < 604800) ref += age * 1000;
+
+      var mine = sent + (Date.now() - sent) / 2;
+      var off = ref - mine;
+
+      $("ref").textContent = stamp(ref);
+      $("mine").textContent = stamp(mine);
+      $("diff").textContent = (off >= 0 ? "+" : "-") + gap(off);
+
+      if (Math.abs(off) < 30000) {
+        $("status").className = "good";
+        $("status").textContent = "Your clock is accurate. Nothing to do.";
+        $("fix").className = "";
+      } else {
+        $("status").className = "bad";
+        $("status").textContent = "Your clock is " + gap(off) + " " +
+          (off > 0 ? "behind" : "ahead of") + " the correct time. Fix it with the steps below.";
+        $("fix").className = "show";
+      }
+    }).catch(function () {
+      $("status").className = "";
+      $("status").textContent = "The check could not run. Try again, or reload the page.";
+    }).then(function () {
+      $("again").disabled = false;
+    });
+  }
+
+  $("again").addEventListener("click", check);
+  check();
+})();
+</script>
+</body>
+</html>

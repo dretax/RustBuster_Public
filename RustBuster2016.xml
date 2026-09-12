@@ -1,0 +1,2753 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<doc>
+  <assembly>
+    <name>RustBuster2016</name>
+  </assembly>
+  <members>
+    <member name="T:RustBuster2016.API.Concurrent.ConcurrentDictionary`2">
+      <summary>
+            A thread-safe implementation of a Dictionary for .NET 3.5 using ReaderWriterLock.
+            Allows multiple concurrent readers or a single exclusive writer.
+            </summary>
+      <typeparam name="TKey">The type of the keys in the dictionary.</typeparam>
+      <typeparam name="TValue">The type of the values in the dictionary.</typeparam>
+    </member>
+    <member name="P:RustBuster2016.API.Concurrent.ConcurrentDictionary`2.Item(`0)">
+      <summary>
+            Gets or sets the value associated with the specified key.
+            </summary>
+      <param name="key">The key of the value to get or set.</param>
+      <returns>The value associated with the specified key.</returns>
+    </member>
+    <member name="M:RustBuster2016.API.Concurrent.ConcurrentDictionary`2.GetEnumerator">
+      <summary>
+            Returns an enumerator that iterates through a snapshot of the dictionary.
+            This public method is required for Jint 'for...in' loops to function correctly.
+            </summary>
+      <returns>An enumerator for the dictionary contents.</returns>
+    </member>
+    <member name="M:RustBuster2016.API.Concurrent.ConcurrentDictionary`2.GetItem(`0)">
+      <summary>
+            Safely retrieves an item by key. Returns default(TValue) if the key is not found.
+            Useful for Jint scripts to avoid KeyNotFound exceptions.
+            </summary>
+      <param name="key">The key to look up.</param>
+      <returns>The value if found, otherwise null (or default).</returns>
+    </member>
+    <member name="M:RustBuster2016.API.Concurrent.ConcurrentDictionary`2.GetShallowCopy">
+      <summary>
+            Returns a standard, non-thread-safe Dictionary containing the current elements.
+            </summary>
+      <returns>A shallow copy of the internal dictionary.</returns>
+    </member>
+    <member name="M:RustBuster2016.API.Concurrent.ConcurrentDictionary`2.TryGetValue(`0,`1@)">
+      <summary>
+            Attempts to get the value associated with the specified key from the dictionary.
+            </summary>
+      <param name="key">The key of the value to get.</param>
+      <param name="value">When this method returns, contains the value, otherwise, the default value.</param>
+      <returns>true if the key was found, otherwise, false.</returns>
+    </member>
+    <member name="M:RustBuster2016.API.Concurrent.ConcurrentDictionary`2.TryAdd(`0,`1)">
+      <summary>
+            Attempts to add the specified key and value to the dictionary.
+            </summary>
+      <param name="key">The key of the element to add.</param>
+      <param name="value">The value of the element to add.</param>
+      <returns>true if the key/value pair was added, false if the key already exists.</returns>
+    </member>
+    <member name="M:RustBuster2016.API.Concurrent.ConcurrentDictionary`2.TryRemove(`0)">
+      <summary>
+            Attempts to remove and return the value that has the specified key from the dictionary.
+            </summary>
+      <param name="key">The key of the element to remove.</param>
+      <returns>true if the object was removed successfully, otherwise, false.</returns>
+    </member>
+    <member name="M:RustBuster2016.API.Concurrent.ConcurrentDictionary`2.Remove(`0)">
+      <summary>
+            Removes the element with the specified key from the dictionary.
+            </summary>
+      <param name="key">The key of the element to remove.</param>
+    </member>
+    <member name="M:RustBuster2016.API.Concurrent.ConcurrentDictionary`2.Add(`0,`1)">
+      <summary>
+            Forcibly adds a key/value pair. Throws exception if key exists.
+            </summary>
+    </member>
+    <member name="M:RustBuster2016.API.Concurrent.ConcurrentDictionary`2.ContainsKey(`0)">
+      <summary>
+            Determines whether the dictionary contains the specified key.
+            </summary>
+      <param name="id">The key to locate.</param>
+      <returns>true if the key is found, otherwise, false.</returns>
+    </member>
+    <member name="M:RustBuster2016.API.Concurrent.ConcurrentDictionary`2.Clear">
+      <summary>
+            Removes all keys and values from the dictionary.
+            </summary>
+    </member>
+    <member name="M:RustBuster2016.API.Concurrent.ConcurrentDictionary`2.OrderBy(System.Func{System.Collections.Generic.KeyValuePair{`0,`1},`0})">
+      <summary>
+            Returns a sorted list of the dictionary elements based on a key.
+            </summary>
+    </member>
+    <member name="P:RustBuster2016.API.Concurrent.ConcurrentDictionary`2.Count">
+      <summary>
+            Gets the number of key/value pairs contained in the dictionary.
+            Exposed as a property for Jint compatibility.
+            </summary>
+    </member>
+    <member name="P:RustBuster2016.API.Concurrent.ConcurrentDictionary`2.ValuesCopy">
+      <summary>
+            Returns a new List containing all the values in the dictionary.
+            </summary>
+    </member>
+    <member name="P:RustBuster2016.API.Concurrent.ConcurrentDictionary`2.KeysCopy">
+      <summary>
+            Returns a new List containing all the keys in the dictionary.
+            </summary>
+    </member>
+    <member name="P:RustBuster2016.API.Concurrent.ConcurrentDictionary`2.Values">
+      <summary>
+            Gets a collection containing the values in the dictionary.
+            NOTE: Iterating this outside a lock is thread-unsafe. Use ValuesCopy for safe iteration.
+            </summary>
+    </member>
+    <member name="P:RustBuster2016.API.Concurrent.ConcurrentDictionary`2.Keys">
+      <summary>
+            Gets a collection containing the keys in the dictionary.
+            NOTE: Iterating this outside a lock is thread-unsafe. Use KeysCopy for safe iteration.
+            </summary>
+    </member>
+    <member name="T:RustBuster2016.API.Concurrent.ConcurrentEnumerator`1">
+      <summary>
+            A thread-safe enumerator wrapper for .NET 3.5.
+            This class maintains a <see cref="T:RustBuster2016.API.Concurrent.ReaderWriterLock" /> reader lock for the entire 
+            duration of the enumeration to prevent the collection from being modified.
+            </summary>
+      <typeparam name="T">The type of objects to enumerate.</typeparam>
+    </member>
+    <member name="M:RustBuster2016.API.Concurrent.ConcurrentEnumerator`1.MoveNext">
+      <summary>
+            Advances the enumerator to the next element of the collection.
+            </summary>
+      <returns>true if the enumerator was successfully advanced; false if the enumerator has passed the end of the collection.</returns>
+    </member>
+    <member name="M:RustBuster2016.API.Concurrent.ConcurrentEnumerator`1.Reset">
+      <summary>
+            Sets the enumerator to its initial position, which is before the first element in the collection.
+            </summary>
+    </member>
+    <member name="M:RustBuster2016.API.Concurrent.ConcurrentEnumerator`1.Dispose">
+      <summary>
+            Releases the reader lock held by this enumerator.
+            This must be called (typically via a using block or foreach loop) to allow writer threads to modify the collection.
+            </summary>
+    </member>
+    <member name="P:RustBuster2016.API.Concurrent.ConcurrentEnumerator`1.Current">
+      <summary>
+            Gets the element in the collection at the current position of the enumerator.
+            </summary>
+    </member>
+    <member name="T:RustBuster2016.API.Concurrent.ConcurrentList`1">
+      <summary>
+            A thread-safe implementation of a List for .NET 3.5.
+            Utilizes a <see cref="T:RustBuster2016.API.Concurrent.ReaderWriterLock" /> to allow multiple concurrent readers,
+            or a single exclusive writer.
+            </summary>
+      <typeparam name="T">The type of elements in the list.</typeparam>
+    </member>
+    <member name="M:RustBuster2016.API.Concurrent.ConcurrentList`1.GetShallowCopy">
+      <summary>
+            Returns a new <see cref="T:System.Collections.Generic.List`1" /> containing a snapshot of all current elements.
+            </summary>
+      <returns>A shallow copy of the internal list.</returns>
+    </member>
+    <member name="M:RustBuster2016.API.Concurrent.ConcurrentList`1.Add(`0)">
+      <summary>
+            Adds an object to the end of the list. Requires an exclusive writer lock.
+            </summary>
+      <param name="item">The object to be added to the end of the list.</param>
+    </member>
+    <member name="M:RustBuster2016.API.Concurrent.ConcurrentList`1.Insert(System.Int32,`0)">
+      <summary>
+            Inserts an element into the list at the specified index. Requires an exclusive writer lock.
+            </summary>
+      <param name="index">The zero-based index at which item should be inserted.</param>
+      <param name="item">The object to insert.</param>
+    </member>
+    <member name="M:RustBuster2016.API.Concurrent.ConcurrentList`1.Remove(`0)">
+      <summary>
+            Removes the first occurrence of a specific object from the list. Requires an exclusive writer lock.
+            </summary>
+      <param name="item">The object to remove from the list.</param>
+      <returns>true if item is successfully removed, otherwise, false.</returns>
+    </member>
+    <member name="M:RustBuster2016.API.Concurrent.ConcurrentList`1.RemoveAt(System.Int32)">
+      <summary>
+            Removes the element at the specified index of the list. Requires an exclusive writer lock.
+            </summary>
+      <param name="index">The zero-based index of the element to remove.</param>
+    </member>
+    <member name="M:RustBuster2016.API.Concurrent.ConcurrentList`1.IndexOf(`0)">
+      <summary>
+            Searches for the specified object and returns the zero-based index of the first occurrence.
+            </summary>
+      <param name="item">The object to locate in the list.</param>
+      <returns>The zero-based index of the first occurrence if found, otherwise, –1.</returns>
+    </member>
+    <member name="M:RustBuster2016.API.Concurrent.ConcurrentList`1.Clear">
+      <summary>
+            Removes all elements from the list. Requires an exclusive writer lock.
+            </summary>
+    </member>
+    <member name="M:RustBuster2016.API.Concurrent.ConcurrentList`1.Contains(`0)">
+      <summary>
+            Determines whether an element is in the list.
+            </summary>
+      <param name="item">The object to locate in the list.</param>
+      <returns>true if item is found in the list, otherwise, false.</returns>
+    </member>
+    <member name="M:RustBuster2016.API.Concurrent.ConcurrentList`1.CopyTo(`0[],System.Int32)">
+      <summary>
+            Copies the entire list to a compatible one-dimensional array, starting at the specified index.
+            </summary>
+      <param name="array">The one-dimensional array that is the destination of the elements.</param>
+      <param name="arrayIndex">The zero-based index in array at which copying begins.</param>
+    </member>
+    <member name="M:RustBuster2016.API.Concurrent.ConcurrentList`1.GetEnumerator">
+      <summary>
+            Returns an enumerator that iterates through the list.
+            </summary>
+      <returns>A <see cref="T:RustBuster2016.API.Concurrent.ConcurrentEnumerator`1" /> for the list.</returns>
+    </member>
+    <member name="M:RustBuster2016.API.Concurrent.ConcurrentList`1.Finalize">
+      <summary>
+            Finalizer to ensure resources are cleaned up.
+            </summary>
+    </member>
+    <member name="M:RustBuster2016.API.Concurrent.ConcurrentList`1.Dispose">
+      <summary>
+            Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
+            </summary>
+    </member>
+    <member name="M:RustBuster2016.API.Concurrent.ConcurrentList`1.Dispose(System.Boolean)">
+      <summary>
+            Disposes the <see cref="T:RustBuster2016.API.Concurrent.ReaderWriterLock" /> and suppresses finalization.
+            </summary>
+      <param name="disposing">True if called from Dispose, false if called from finalizer.</param>
+    </member>
+    <member name="P:RustBuster2016.API.Concurrent.ConcurrentList`1.Item(System.Int32)">
+      <summary>
+            Gets or sets the element at the specified index.
+            </summary>
+      <param name="index">The zero-based index of the element to get or set.</param>
+      <returns>The element at the specified index.</returns>
+    </member>
+    <member name="P:RustBuster2016.API.Concurrent.ConcurrentList`1.Count">
+      <summary>
+            Gets the number of elements actually contained in the list.
+            </summary>
+    </member>
+    <member name="P:RustBuster2016.API.Concurrent.ConcurrentList`1.IsReadOnly">
+      <summary>
+            Gets a value indicating whether the list is read-only.
+            </summary>
+    </member>
+    <member name="M:RustBuster2016.API.Concurrent.ConcurrentList`1.AddRange(System.Collections.Generic.IEnumerable{`0})">
+      <summary>
+            Adds the elements of the specified collection to the end of the list. Requires an exclusive writer lock.
+            </summary>
+      <param name="collection">The collection whose elements should be added to the end of the list.</param>
+    </member>
+    <member name="T:RustBuster2016.API.Concurrent.Lazy`1">
+      <summary>
+            Provides support for lazy initialization.
+            </summary>
+      <typeparam name="T">Specifies the type of object that is being lazily initialized.</typeparam>
+    </member>
+    <member name="P:RustBuster2016.API.Concurrent.Lazy`1.Value">
+      <summary>
+            Gets the lazily initialized value of the current Lazy{T} instance.
+            </summary>
+    </member>
+    <member name="P:RustBuster2016.API.Concurrent.Lazy`1.IsValueCreated">
+      <summary>
+            Gets a value that indicates whether a value has been created for this Lazy{T} instance.
+            </summary>
+    </member>
+    <member name="M:RustBuster2016.API.Concurrent.Lazy`1.ToString">
+      <summary>
+            Creates and returns a string representation of the Lazy{T}.Value.
+            </summary>
+      <returns>The string representation of the Lazy{T}.Value property.</returns>
+    </member>
+    <member name="T:RustBuster2016.API.Concurrent.LockCookie">
+      <summary>
+            Our own implementation of LockCookie.
+            This class resides in the mscorlib.dll, but LockQueue is internal, and we aren't going to patch that.
+            </summary>
+    </member>
+    <member name="T:RustBuster2016.API.Concurrent.LockQueue">
+      <summary>
+            Self implementation of this class.
+            This class resides in the mscorlib under namespace System.Threading by having an internal flag.
+            This is not the place where we want to patch, so here is our own version instead.
+            </summary>
+    </member>
+    <member name="T:RustBuster2016.API.Concurrent.ReaderWriterLock">
+      <summary>
+            Our own implementation of ReaderWriterLock.
+            This class resides in the mscorlib.dll, but LockQueue is internal, and we aren't going to patch that.
+            You should read the microsoft docs on how a ReaderWriterLock works.
+            </summary>
+    </member>
+    <member name="T:RustBuster2016.API.DataStoreContext">
+      <summary>
+            Specifies which datastore an API caller wants to access.
+            </summary>
+    </member>
+    <member name="F:RustBuster2016.API.DataStoreContext.Server">
+      <summary>
+            The datastore isolated to the server the client is currently connected to.
+            The scope key is derived automatically from it.
+            </summary>
+    </member>
+    <member name="F:RustBuster2016.API.DataStoreContext.Global">
+      <summary>
+            The datastore shared and accessible across all servers.
+            </summary>
+    </member>
+    <member name="T:RustBuster2016.API.DataStore">
+      <summary>
+            A thread-safe data storage and management system designed for handling collections of tabular data.
+            </summary>
+    </member>
+    <member name="M:RustBuster2016.API.DataStore.GetInstance">
+            Retrieves the single instance of the DataStore class, creating it if it does not already exist.
+            All operations are then directed to the global or server-isolated partition via the
+            <see cref="T:RustBuster2016.API.DataStoreContext" /> parameter on each method.
+            <returns>
+            The singleton instance of the DataStore class.
+            </returns></member>
+    <member name="M:RustBuster2016.API.DataStore.Add(System.String,System.Object,System.Object,RustBuster2016.API.DataStoreContext)">
+            Adds a key-value pair to a specified table in the data store.
+            <param name="tablename">The name of the table where the key-value pair should be added.</param><param name="key">The key associated with the value. If the key is null, the operation is ignored.</param><param name="val">The value to associate with the specified key in the table.</param><param name="context">Whether to write to the global table or the current server's isolated table.</param></member>
+    <member name="M:RustBuster2016.API.DataStore.ContainsKey(System.String,System.Object,RustBuster2016.API.DataStoreContext)">
+            Checks if a specified key exists in the given table.
+            <param name="tablename">The name of the table to search in.</param><param name="key">The key to check for existence within the table.</param><param name="context">Whether to look in the global table or the current server's isolated table.</param><returns>Returns true if the specified key exists in the table; otherwise, false.</returns></member>
+    <member name="M:RustBuster2016.API.DataStore.ContainsValue(System.String,System.Object,RustBuster2016.API.DataStoreContext)">
+            Checks whether the specified value exists in the provided table.
+            <param name="tablename">The name of the table to search within.</param><param name="val">The value to check for existence.</param><param name="context">Whether to look in the global table or the current server's isolated table.</param><returns>True if the value exists in the table; otherwise, false.</returns></member>
+    <member name="M:RustBuster2016.API.DataStore.Count(System.String,RustBuster2016.API.DataStoreContext)">
+      <summary>
+            Gets the count of items stored in a specific table within the data store.
+            </summary>
+      <param name="tablename">The name of the table for which the item count is to be retrieved.</param>
+      <param name="context">Whether to count in the global table or the current server's isolated table.</param>
+      <returns>The number of items in the specified table. Returns 0 if the table does not exist or an error occurs.</returns>
+    </member>
+    <member name="M:RustBuster2016.API.DataStore.Flush(System.String,RustBuster2016.API.DataStoreContext)">
+            Clears all the data associated with the specified table name from the data store.
+            <param name="tablename">The name of the table whose data will be flushed.</param><param name="context">Whether to flush the global table or the current server's isolated table.</param></member>
+    <member name="M:RustBuster2016.API.DataStore.Get(System.String,System.Object,RustBuster2016.API.DataStoreContext)">
+      <summary>
+            Retrieves the value associated with the specified key from the specified table in the datastore.
+            </summary>
+      <param name="tablename">The name of the table from which the value is to be retrieved.</param>
+      <param name="key">The key for which the value needs to be retrieved.</param>
+      <param name="context">Whether to read from the global table or the current server's isolated table.</param>
+      <returns>The value associated with the specified key in the specified table, or <c>null</c> if the key does not exist.</returns>
+    </member>
+    <member name="M:RustBuster2016.API.DataStore.GetTable(System.String,RustBuster2016.API.DataStoreContext)">
+            Retrieves a hashtable representation of the specified table, where both keys and values
+            are parsed if they are in a specific vector string format.
+            <param name="tablename">The name of the table to retrieve from the datastore.</param><param name="context">Whether to read from the global table or the current server's isolated table.</param><returns>Returns a hashtable representing the data in the specified table, or null if no table exists with the given name.</returns></member>
+    <member name="M:RustBuster2016.API.DataStore.Keys(System.String,RustBuster2016.API.DataStoreContext)">
+            Retrieves all the keys from the specified table in the datastore.
+            <param name="tablename">
+            The name of the table from which to retrieve the keys.
+            </param><param name="context">Whether to read from the global table or the current server's isolated table.</param><returns>
+            An array of objects representing the keys in the specified table.
+            If the table does not exist or an error occurs, an empty array is returned.
+            </returns></member>
+    <member name="M:RustBuster2016.API.DataStore.Load">
+            Loads the data store from a file on disk.
+            If the file exists, the method reads the file, decrypts its content,
+            and deserializes it into the internal data structure.
+            If the file does not exist, the method does nothing.
+            If an error occurs during the loading process (e.g., decryption failure
+            or deserialization error), the internal data structure is reset to
+            an empty state, and the error is logged.
+        </member>
+    <member name="M:RustBuster2016.API.DataStore.Remove(System.String,System.Object,RustBuster2016.API.DataStoreContext)">
+      <summary>
+            Removes an entry from the specified table in the datastore using the provided key.
+            </summary>
+      <param name="tablename">The name of the table from which the entry should be removed.</param>
+      <param name="key">The key of the entry to be removed.</param>
+      <param name="context">Whether to remove from the global table or the current server's isolated table.</param>
+    </member>
+    <member name="M:RustBuster2016.API.DataStore.Save">
+            Saves the current state of the data store to a file on disk.
+            The data is serialized into JSON format, encrypted, and stored in the specified file path.
+            This method reads the current data using a reader lock to ensure thread safety
+            and writes the encrypted data to a file. If no data exists in the datastore,
+            the method takes no action.
+            An exception during the save process will be logged via the Logger class.
+        </member>
+    <member name="M:RustBuster2016.API.DataStore.Values(System.String,RustBuster2016.API.DataStoreContext)">
+            Retrieves all values from the specified table in the datastore.
+            <param name="tablename">
+            The name of the table from which to retrieve values.
+            </param><param name="context">Whether to read from the global table or the current server's isolated table.</param><returns>
+            An array of objects containing all the values in the specified table. If the table does not exist, null is returned. If an error occurs, an empty array is returned.
+            </returns></member>
+    <member name="M:RustBuster2016.API.DataStore.GetTableNames(RustBuster2016.API.DataStoreContext)">
+            Retrieves the list of all table names from the datastore for the requested context.
+            Global only lists global tables; Server only lists tables belonging to the currently
+            connected server, with the internal hash prefix stripped back off.
+            <param name="context">Whether to list global tables or the current server's isolated tables.</param><returns>
+            An array of strings representing the names of the tables in the datastore.
+            If an error occurs, an empty array is returned.
+            </returns></member>
+    <member name="T:RustBuster2016.API.UnityTypeConverter">
+      <summary>
+            A custom JSON converter that handles serialization and deserialization
+            for specific Unity data types including Vector3, Vector2, Quaternion, Color, and Rect.
+            </summary>
+    </member>
+    <member name="M:RustBuster2016.API.UnityTypeConverter.CanConvert(System.Type)">
+            Determines whether the specified type can be converted by this converter.
+            <param name="t">The type to check.</param><returns>true if the specified type is supported; otherwise, false.</returns></member>
+    <member name="M:RustBuster2016.API.UnityTypeConverter.WriteJson(Newtonsoft.Json.JsonWriter,System.Object,Newtonsoft.Json.JsonSerializer)">
+            Writes a JSON representation of a Unity object type (such as Vector3, Quaternion, Color, etc.) to the specified writer.
+            <param name="writer">The JsonWriter to write the JSON data to.</param><param name="value">The Unity object to serialize into JSON format.</param><param name="serializer">The JsonSerializer handling the serialization process.</param></member>
+    <member name="M:RustBuster2016.API.UnityTypeConverter.ReadJson(Newtonsoft.Json.JsonReader,System.Type,System.Object,Newtonsoft.Json.JsonSerializer)">
+            Reads a JSON structure from the specified JSON reader and deserializes it into the desired object type.
+            <param name="reader">The JsonReader instance used to read the JSON data.</param><param name="objectType">The type of the object that the JSON data should be deserialized into.</param><param name="existingValue">The existing value of the object being read (if any).</param><param name="serializer">The JsonSerializer instance used for deserialization.</param><returns>Returns the deserialized object of the specified type.</returns></member>
+    <member name="T:RustBuster2016.API.Events.ExplosionType">
+      <summary>
+            Indicates at which point in the explosion lifecycle the event is fired.
+            </summary>
+    </member>
+    <member name="F:RustBuster2016.API.Events.ExplosionType.BeforeExplosion">
+      <summary>Fired just before the explosion occurs.</summary>
+    </member>
+    <member name="F:RustBuster2016.API.Events.ExplosionType.AfterExplosion">
+      <summary>Fired just after the explosion has occurred.</summary>
+    </member>
+    <member name="T:RustBuster2016.API.Events.C4ExplosionEvent">
+      <summary>
+            Event fired when a C4 explosive detonates.
+            Runs twice: once before and once after the explosion.
+            </summary>
+    </member>
+    <member name="P:RustBuster2016.API.Events.C4ExplosionEvent.ExplosionType">
+      <summary>
+            Returns the type of the event.
+            BE SURE to check this, because your event will run twice if you don't do it.
+            </summary>
+    </member>
+    <member name="P:RustBuster2016.API.Events.C4ExplosionEvent.TimedExplosive">
+      <summary>
+            Returns the TimedExplosive class.
+            </summary>
+    </member>
+    <member name="P:RustBuster2016.API.Events.C4ExplosionEvent.ExplosionObject">
+      <summary>
+            This returns the explosion's object, but only "AfterExplosion". Otherwise null.
+            </summary>
+    </member>
+    <member name="T:RustBuster2016.API.Events.ChatEvent">
+      <summary>
+            Event fired when the local player sends a chat message.
+            </summary>
+    </member>
+    <member name="P:RustBuster2016.API.Events.ChatEvent.ChatUI">
+      <summary>
+            Returns the ChatUI Class. This is where you can get all the info.
+            </summary>
+    </member>
+    <member name="P:RustBuster2016.API.Events.ChatEvent.Cancelled">
+      <summary>
+            Returns true if the event has been cancelled by a plugin.
+            </summary>
+    </member>
+    <member name="M:RustBuster2016.API.Events.ChatEvent.Cancel(System.Boolean)">
+      <summary>
+            Cancels the event, preventing the chat message from being sent.
+            </summary>
+      <param name="MakeChatUIDisappear">If true, also closes the chat UI immediately.</param>
+    </member>
+    <member name="T:RustBuster2016.API.Events.CraftingEvent">
+      <summary>
+            Event fired when the local player starts crafting an item.
+            </summary>
+    </member>
+    <member name="P:RustBuster2016.API.Events.CraftingEvent.CraftingInventory">
+      <summary>
+            Returns the CraftingInventory class.
+            </summary>
+    </member>
+    <member name="P:RustBuster2016.API.Events.CraftingEvent.BlueprintDataBlock">
+      <summary>
+            Returns the blueprint of the item.
+            </summary>
+    </member>
+    <member name="P:RustBuster2016.API.Events.CraftingEvent.Amount">
+      <summary>
+            Returns the amount of the item that is being crafted.
+            </summary>
+    </member>
+    <member name="P:RustBuster2016.API.Events.CraftingEvent.Cancelled">
+      <summary>
+            Returns true if the event has been cancelled by a plugin.
+            </summary>
+    </member>
+    <member name="M:RustBuster2016.API.Events.CraftingEvent.Cancel">
+      <summary>
+            Cancels the event, preventing the crafting action from starting.
+            </summary>
+    </member>
+    <member name="T:RustBuster2016.API.Events.CraftWindowClickEvent">
+      <summary>
+            Event fired when the player clicks an item in the crafting window.
+            </summary>
+    </member>
+    <member name="P:RustBuster2016.API.Events.CraftWindowClickEvent.GameObject">
+      <summary>
+            Returns the CraftWindow's gameobject.
+            </summary>
+    </member>
+    <member name="P:RustBuster2016.API.Events.CraftWindowClickEvent.RPOSCraftWindow">
+      <summary>
+            Returns the CraftWindow Classs.
+            </summary>
+    </member>
+    <member name="P:RustBuster2016.API.Events.CraftWindowClickEvent.Cancelled">
+      <summary>
+            Returns true if the event has been cancelled by a plugin.
+            </summary>
+    </member>
+    <member name="M:RustBuster2016.API.Events.CraftWindowClickEvent.Cancel">
+      <summary>
+            Cancels the event, preventing the native click action from executing.
+            </summary>
+    </member>
+    <member name="T:RustBuster2016.API.Events.DeathScreenDisAppearEvent">
+      <summary>
+            Event fired when the death screen is about to disappear (i.e. the player has respawned).
+            </summary>
+    </member>
+    <member name="P:RustBuster2016.API.Events.DeathScreenDisAppearEvent.DeathScreen">
+      <summary>
+            Returns the deathscreen class where you can modify anything.
+            </summary>
+    </member>
+    <member name="P:RustBuster2016.API.Events.DeathScreenDisAppearEvent.Cancelled">
+      <summary>
+            Returns true if the event has been cancelled by a plugin.
+            </summary>
+    </member>
+    <member name="M:RustBuster2016.API.Events.DeathScreenDisAppearEvent.Cancel">
+      <summary>
+            Cancels the event, keeping the death screen visible and preventing the hide animation.
+            </summary>
+    </member>
+    <member name="T:RustBuster2016.API.Events.DeathScreenType">
+      <summary>
+            Tells you if the deathscreen appeared because the player died
+            or wants to respawn.
+            </summary>
+    </member>
+    <member name="T:RustBuster2016.API.Events.DeathScreenEvent">
+      <summary>
+            Event fired when the death/respawn screen is shown to the local player.
+            </summary>
+    </member>
+    <member name="P:RustBuster2016.API.Events.DeathScreenEvent.DeathScreen">
+      <summary>
+            Returns the deathscreen class where you can modify anything.
+            </summary>
+    </member>
+    <member name="P:RustBuster2016.API.Events.DeathScreenEvent.DeathScreenType">
+      <summary>
+            Returns the type of the DeathScreen.
+            </summary>
+    </member>
+    <member name="P:RustBuster2016.API.Events.DeathScreenEvent.Cancelled">
+      <summary>
+            Returns true if the event has been cancelled by a plugin.
+            </summary>
+    </member>
+    <member name="M:RustBuster2016.API.Events.DeathScreenEvent.Cancel">
+      <summary>
+            Cancels the event, preventing the death screen from appearing or the respawn from processing.
+            </summary>
+    </member>
+    <member name="T:RustBuster2016.API.Events.GrenadeExplosionEvent">
+      <summary>
+            Event fired when a grenade detonates.
+            Runs twice: once before and once after the explosion.
+            </summary>
+    </member>
+    <member name="P:RustBuster2016.API.Events.GrenadeExplosionEvent.ExplosionType">
+      <summary>
+            Returns the type of the event.
+            BE SURE to check this, because your event will run twice if you don't do it.
+            </summary>
+    </member>
+    <member name="P:RustBuster2016.API.Events.GrenadeExplosionEvent.TimedGrenade">
+      <summary>
+            Returns the TimedGrenade class.
+            </summary>
+    </member>
+    <member name="P:RustBuster2016.API.Events.GrenadeExplosionEvent.ExplosionObject">
+      <summary>
+            This returns the explosion's object, but only "AfterExplosion". Otherwise null.
+            </summary>
+    </member>
+    <member name="T:RustBuster2016.API.Events.InventoryToggleEvent">
+      <summary>
+            Event fired when the player's inventory (RPOS) is about to be toggled on or off.
+            </summary>
+    </member>
+    <member name="P:RustBuster2016.API.Events.InventoryToggleEvent.RPOS">
+      <summary>
+            Returns the RPOS class.
+            </summary>
+    </member>
+    <member name="P:RustBuster2016.API.Events.InventoryToggleEvent.Value">
+      <summary>
+            The value that the inventory wants to be toggled to.
+            (On / Off)
+            </summary>
+    </member>
+    <member name="P:RustBuster2016.API.Events.InventoryToggleEvent.Cancelled">
+      <summary>
+            Returns true if the event has been cancelled by a plugin.
+            </summary>
+    </member>
+    <member name="M:RustBuster2016.API.Events.InventoryToggleEvent.Cancel">
+      <summary>
+            Cancels the event, preventing the inventory from being toggled.
+            </summary>
+    </member>
+    <member name="T:RustBuster2016.API.Events.ItemAddedEvent">
+      <summary>
+            Fired when an item is being added or assigned to an inventory slot.
+            </summary>
+    </member>
+    <member name="P:RustBuster2016.API.Events.ItemAddedEvent.Assignment">
+      <summary>
+            Gets the raw Assignment payload struct from the game.
+            </summary>
+    </member>
+    <member name="P:RustBuster2016.API.Events.ItemAddedEvent.Inventory">
+      <summary>
+            The inventory the item is being added to.
+            </summary>
+    </member>
+    <member name="P:RustBuster2016.API.Events.ItemAddedEvent.Slot">
+      <summary>
+            The target slot index where the item is being placed.
+            </summary>
+    </member>
+    <member name="P:RustBuster2016.API.Events.ItemAddedEvent.Cancelled">
+      <summary>
+            Returns true if a plugin has cancelled this event.
+            </summary>
+    </member>
+    <member name="M:RustBuster2016.API.Events.ItemAddedEvent.Cancel">
+      <summary>
+            Cancels the event, preventing the item from being natively added to the inventory.
+            </summary>
+    </member>
+    <member name="T:RustBuster2016.API.Events.ClickType">
+      <summary>
+            Tells you what happened at the event.
+            </summary>
+    </member>
+    <member name="T:RustBuster2016.API.Events.ItemCellClickedEvent">
+      <summary>
+            Event fired when the player clicks on an inventory cell in the RPOS inventory UI.
+            </summary>
+    </member>
+    <member name="P:RustBuster2016.API.Events.ItemCellClickedEvent.RPOS">
+      <summary>
+            Returns the RPOS class.
+            </summary>
+    </member>
+    <member name="P:RustBuster2016.API.Events.ItemCellClickedEvent.RPOSInventoryCell">
+      <summary>
+            Returns the Cell class.
+            </summary>
+    </member>
+    <member name="P:RustBuster2016.API.Events.ItemCellClickedEvent.ClickType">
+      <summary>
+            Returns the type of the event.
+            </summary>
+    </member>
+    <member name="P:RustBuster2016.API.Events.ItemCellClickedEvent.Cancelled">
+      <summary>
+            Returns true if the event has been cancelled by a plugin.
+            </summary>
+    </member>
+    <member name="M:RustBuster2016.API.Events.ItemCellClickedEvent.Cancel">
+      <summary>
+            Cancels the event, preventing the native cell-click action from executing.
+            </summary>
+    </member>
+    <member name="T:RustBuster2016.API.Events.ItemRemovedEvent">
+      <summary>
+            Fired when an item is being removed from an inventory slot.
+            </summary>
+    </member>
+    <member name="P:RustBuster2016.API.Events.ItemRemovedEvent.Inventory">
+      <summary>
+            The inventory the item is being removed from.
+            </summary>
+    </member>
+    <member name="P:RustBuster2016.API.Events.ItemRemovedEvent.Slot">
+      <summary>
+            The slot index the item is being removed from.
+            </summary>
+    </member>
+    <member name="P:RustBuster2016.API.Events.ItemRemovedEvent.Match">
+      <summary>
+            The specific InventoryItem object being matched for removal.
+            </summary>
+    </member>
+    <member name="P:RustBuster2016.API.Events.ItemRemovedEvent.MustMatch">
+      <summary>
+            Indicates if the removal requires a strict reference match to succeed natively.
+            </summary>
+    </member>
+    <member name="P:RustBuster2016.API.Events.ItemRemovedEvent.Cancelled">
+      <summary>
+            Returns true if a plugin has cancelled this event.
+            </summary>
+    </member>
+    <member name="M:RustBuster2016.API.Events.ItemRemovedEvent.Cancel">
+      <summary>
+            Cancels the event, preventing the item from being natively removed from the inventory.
+            </summary>
+    </member>
+    <member name="T:RustBuster2016.API.Events.ItemUseEvent">
+      <summary>
+            Event fired when an item's server-side use action (RPC) is triggered.
+            </summary>
+    </member>
+    <member name="P:RustBuster2016.API.Events.ItemUseEvent.ItemRepresentation">
+      <summary>
+            Returns the item representation of the class.
+            </summary>
+    </member>
+    <member name="P:RustBuster2016.API.Events.ItemUseEvent.Number">
+      <summary>
+            Gets the action number associated with the use RPC (e.g. 3 for a melee swing server action).
+            </summary>
+    </member>
+    <member name="P:RustBuster2016.API.Events.ItemUseEvent.BitStream">
+      <summary>
+            Gets the network bit stream data sent with the use action.
+            </summary>
+    </member>
+    <member name="P:RustBuster2016.API.Events.ItemUseEvent.NetworkMessageInfo">
+      <summary>
+            Gets the network message info (sender, timestamp, etc.) for the use action.
+            </summary>
+    </member>
+    <member name="P:RustBuster2016.API.Events.ItemUseEvent.Cancelled">
+      <summary>
+            Returns true if the event has been cancelled by a plugin.
+            </summary>
+    </member>
+    <member name="M:RustBuster2016.API.Events.ItemUseEvent.Cancel">
+      <summary>
+            Cancels the event, preventing the native item use action from executing.
+            </summary>
+    </member>
+    <member name="T:RustBuster2016.API.Events.LocalPlayerAttachedEvent">
+      <summary>
+            Event fired after the local player has been attached to an anchor and every
+            flag on the request has been applied. Not cancellable; call
+            LocalAttachment.ForceDetach if you need to undo it.
+            </summary>
+    </member>
+    <member name="P:RustBuster2016.API.Events.LocalPlayerAttachedEvent.AttachmentHandle">
+      <summary>
+            Returns the live handle for the attachment. Flags, LocalOffset and the look
+            limits on it can be changed at any time while it stays valid.
+            </summary>
+    </member>
+    <member name="P:RustBuster2016.API.Events.LocalPlayerAttachedEvent.Owner">
+      <summary>
+            Returns the name of the plugin that owns the attachment.
+            </summary>
+    </member>
+    <member name="P:RustBuster2016.API.Events.LocalPlayerAttachedEvent.UserData">
+      <summary>
+            Returns whatever the requesting plugin put in AttachRequest.UserData.
+            </summary>
+    </member>
+    <member name="T:RustBuster2016.API.Events.LocalPlayerAttachEvent">
+      <summary>
+            Event fired right before the local player is attached to an anchor
+            (a vehicle seat, a mounted turret, a chair, anything with a Transform).
+            Cancel it to block the mount.
+            </summary>
+    </member>
+    <member name="P:RustBuster2016.API.Events.LocalPlayerAttachEvent.Owner">
+      <summary>
+            Returns the name of the plugin that asked for the attachment.
+            </summary>
+    </member>
+    <member name="P:RustBuster2016.API.Events.LocalPlayerAttachEvent.Anchor">
+      <summary>
+            Returns the transform the local player is about to be attached to.
+            </summary>
+    </member>
+    <member name="P:RustBuster2016.API.Events.LocalPlayerAttachEvent.UserData">
+      <summary>
+            Returns whatever the requesting plugin put in AttachRequest.UserData.
+            </summary>
+    </member>
+    <member name="P:RustBuster2016.API.Events.LocalPlayerAttachEvent.Cancelled">
+      <summary>
+            Returns true if the event has been cancelled by a plugin.
+            </summary>
+    </member>
+    <member name="M:RustBuster2016.API.Events.LocalPlayerAttachEvent.Cancel">
+      <summary>
+            Cancels the event, preventing the local player from being attached.
+            </summary>
+    </member>
+    <member name="T:RustBuster2016.API.Events.LocalPlayerDetachedEvent">
+      <summary>
+            Event fired after the local player has been detached and every saved value
+            (controller state, movement/look locks, collision pairs) has been restored.
+            The handle is already invalid by this point, so only the owner name, the
+            user data and the reason are handed back.
+            </summary>
+    </member>
+    <member name="P:RustBuster2016.API.Events.LocalPlayerDetachedEvent.Owner">
+      <summary>
+            Returns the name of the plugin that owned the attachment.
+            </summary>
+    </member>
+    <member name="P:RustBuster2016.API.Events.LocalPlayerDetachedEvent.UserData">
+      <summary>
+            Returns whatever the requesting plugin put in AttachRequest.UserData.
+            </summary>
+    </member>
+    <member name="P:RustBuster2016.API.Events.LocalPlayerDetachedEvent.DetachReason">
+      <summary>
+            Returns why the detach happened.
+            </summary>
+    </member>
+    <member name="T:RustBuster2016.API.Events.DetachReason">
+      <summary>
+            Tells you why the local player is being detached from an anchor.
+            Only Requested can be cancelled; everything else has already happened
+            and refusing it would leave the player stuck in a dead seat.
+            </summary>
+    </member>
+    <member name="F:RustBuster2016.API.Events.DetachReason.Requested">
+      <summary>A plugin called Detach(). The only cancellable reason.</summary>
+    </member>
+    <member name="F:RustBuster2016.API.Events.DetachReason.Replaced">
+      <summary>Another Attach() call took over the local player.</summary>
+    </member>
+    <member name="F:RustBuster2016.API.Events.DetachReason.AnchorDestroyed">
+      <summary>The anchor transform was destroyed or deactivated.</summary>
+    </member>
+    <member name="F:RustBuster2016.API.Events.DetachReason.LocalPlayerDied">
+      <summary>The local character died.</summary>
+    </member>
+    <member name="F:RustBuster2016.API.Events.DetachReason.LocalPlayerGone">
+      <summary>The local character went away (level unload, despawn).</summary>
+    </member>
+    <member name="F:RustBuster2016.API.Events.DetachReason.Disconnected">
+      <summary>The client left the server.</summary>
+    </member>
+    <member name="F:RustBuster2016.API.Events.DetachReason.PluginUnloaded">
+      <summary>The plugin that owned the attachment was unloaded.</summary>
+    </member>
+    <member name="F:RustBuster2016.API.Events.DetachReason.Forced">
+      <summary>
+            Supplied by a caller of LocalAttachment.ForceDetach. RustBuster never raises this
+            itself, every internal teardown has a more specific reason, so seeing it means a
+            plugin ejected the player for its own reasons.
+            </summary>
+    </member>
+    <member name="T:RustBuster2016.API.Events.LocalPlayerDetachEvent">
+      <summary>
+            Event fired right before the local player is detached from an anchor.
+            </summary>
+    </member>
+    <member name="P:RustBuster2016.API.Events.LocalPlayerDetachEvent.AttachmentHandle">
+      <summary>
+            Returns the handle that is about to be invalidated.
+            </summary>
+    </member>
+    <member name="P:RustBuster2016.API.Events.LocalPlayerDetachEvent.DetachReason">
+      <summary>
+            Returns why the detach is happening.
+            BE SURE to check this before you cancel, because cancelling only works
+            for DetachReason.Requested.
+            </summary>
+    </member>
+    <member name="P:RustBuster2016.API.Events.LocalPlayerDetachEvent.Owner">
+      <summary>
+            Returns the name of the plugin that owns the attachment.
+            </summary>
+    </member>
+    <member name="P:RustBuster2016.API.Events.LocalPlayerDetachEvent.UserData">
+      <summary>
+            Returns whatever the requesting plugin put in AttachRequest.UserData.
+            </summary>
+    </member>
+    <member name="P:RustBuster2016.API.Events.LocalPlayerDetachEvent.Cancelled">
+      <summary>
+            Returns true if the event has been cancelled by a plugin.
+            </summary>
+    </member>
+    <member name="M:RustBuster2016.API.Events.LocalPlayerDetachEvent.Cancel">
+      <summary>
+            Cancels the event, keeping the local player attached.
+            Silently does nothing unless DetachReason is Requested.
+            </summary>
+    </member>
+    <member name="T:RustBuster2016.API.Events.LootWindowClose">
+      <summary>
+            Event fired when a loot window is about to be closed.
+            </summary>
+    </member>
+    <member name="P:RustBuster2016.API.Events.LootWindowClose.Cancelled">
+      <summary>
+            Returns true if the event has been cancelled by a plugin.
+            </summary>
+    </member>
+    <member name="M:RustBuster2016.API.Events.LootWindowClose.Cancel">
+      <summary>
+            Cancels the event, preventing the loot window from closing.
+            </summary>
+    </member>
+    <member name="P:RustBuster2016.API.Events.LootWindowClose.LootableObject">
+      <summary>
+            Returns the LootableObject that owns the loot window being closed.
+            </summary>
+    </member>
+    <member name="T:RustBuster2016.API.Events.LootWindowOpen">
+      <summary>
+            Event fired when a loot window is opened for the local player.
+            </summary>
+    </member>
+    <member name="P:RustBuster2016.API.Events.LootWindowOpen.LootableObject">
+      <summary>
+            Returns the LootableObject object of the event.
+            </summary>
+    </member>
+    <member name="P:RustBuster2016.API.Events.LootWindowOpen.NetworkPlayer">
+      <summary>
+            Returns the Networkplayer.
+            </summary>
+    </member>
+    <member name="P:RustBuster2016.API.Events.LootWindowOpen.Cancelled">
+      <summary>
+            Returns true if the event has been cancelled by a plugin.
+            </summary>
+    </member>
+    <member name="M:RustBuster2016.API.Events.LootWindowOpen.Cancel">
+      <summary>
+            Cancels the event, sending a StopLooting RPC and clearing the looter state so the window never fully opens.
+            </summary>
+    </member>
+    <member name="P:RustBuster2016.API.Events.MessageReceivedEvent.MessageByServer">
+      <summary>
+            Gets the Message that was sent by the server.
+            </summary>
+    </member>
+    <member name="P:RustBuster2016.API.Events.MessageReceivedEvent.PluginSender">
+      <summary>
+            Gets the plugin's name that sent the message to the server.
+            </summary>
+    </member>
+    <member name="P:RustBuster2016.API.Events.MessageReceivedEvent.RespondingPluginName">
+      <summary>
+            This is the Plugin Name that is responding to the event.
+            You must set the name of your plugin that is handling the event here.
+            </summary>
+    </member>
+    <member name="P:RustBuster2016.API.Events.MessageReceivedEvent.ReturnMessage">
+      <summary>
+            Gets or Sets the ReturnMessage that will be sent back to the client as a response.
+            ~ and @ characters are not allowed.
+            </summary>
+    </member>
+    <member name="T:RustBuster2016.API.Events.PluginMessageResponse">
+      <summary>
+            Result states for Inter-Plugin Communication attempts.
+            </summary>
+    </member>
+    <member name="F:RustBuster2016.API.Events.PluginMessageResponse.Success">
+      <summary> Message was delivered successfully to the target plugin. </summary>
+    </member>
+    <member name="F:RustBuster2016.API.Events.PluginMessageResponse.TargetNotFound">
+      <summary> The target plugin name does not exist in the PluginLoader. </summary>
+    </member>
+    <member name="F:RustBuster2016.API.Events.PluginMessageResponse.Error">
+      <summary> An internal exception occurred while trying to dispatch the message. </summary>
+    </member>
+    <member name="F:RustBuster2016.API.Events.PluginMessageResponse.Rejected">
+      <summary> The message was delivered, but the target plugin explicitly rejected it via Cancel(). </summary>
+    </member>
+    <member name="T:RustBuster2016.API.Events.PluginMessageEvent">
+      <summary>
+            Event arguments for communication between two plugins. 
+            This container carries the payload and allows the receiver to return data or cancel the request.
+            </summary>
+    </member>
+    <member name="P:RustBuster2016.API.Events.PluginMessageEvent.SenderName">
+      <summary>
+            Gets the name of the plugin that initiated this message.
+            </summary>
+    </member>
+    <member name="P:RustBuster2016.API.Events.PluginMessageEvent.ReceiverName">
+      <summary>
+            Gets the name of the plugin that this message is directed to.
+            </summary>
+    </member>
+    <member name="P:RustBuster2016.API.Events.PluginMessageEvent.Message">
+      <summary>
+            Gets the primary payload sent by the sender.
+            </summary>
+    </member>
+    <member name="P:RustBuster2016.API.Events.PluginMessageEvent.Response">
+      <summary>
+            Gets or sets the data returned by the receiving plugin.
+            </summary>
+    </member>
+    <member name="P:RustBuster2016.API.Events.PluginMessageEvent.Cancelled">
+      <summary>
+            Returns true if the message was rejected/cancelled by the receiver.
+            </summary>
+    </member>
+    <member name="M:RustBuster2016.API.Events.PluginMessageEvent.Cancel">
+      <summary>
+            Rejects the message. The sender will receive a 'Rejected' response status.
+            </summary>
+    </member>
+    <member name="T:RustBuster2016.API.Events.ResearchEvent">
+      <summary>
+            Event fired when the local player uses a research kit on an item.
+            </summary>
+    </member>
+    <member name="P:RustBuster2016.API.Events.ResearchEvent.Cancelled">
+      <summary>
+            Returns true if the event has been cancelled by a plugin.
+            </summary>
+    </member>
+    <member name="P:RustBuster2016.API.Events.ResearchEvent.Item">
+      <summary>
+            Returns the research tool item being used.
+            </summary>
+    </member>
+    <member name="P:RustBuster2016.API.Events.ResearchEvent.Inventory">
+      <summary>
+            Returns the player's inventory.
+            </summary>
+    </member>
+    <member name="P:RustBuster2016.API.Events.ResearchEvent.OtherItem">
+      <summary>
+            Returns the item that is being researched.
+            </summary>
+    </member>
+    <member name="P:RustBuster2016.API.Events.ResearchEvent.DataBlock">
+      <summary>
+            Returns the data block of the item being researched.
+            </summary>
+    </member>
+    <member name="M:RustBuster2016.API.Events.ResearchEvent.Cancel">
+      <summary>
+            Cancels the event, preventing the research action from completing.
+            </summary>
+    </member>
+    <member name="T:RustBuster2016.API.Events.SupplySignalExplosionEvent">
+      <summary>
+            Event fired when a supply signal grenade detonates.
+            Runs twice: once before and once after the explosion.
+            </summary>
+    </member>
+    <member name="P:RustBuster2016.API.Events.SupplySignalExplosionEvent.ExplosionType">
+      <summary>
+            Returns the type of the event.
+            BE SURE to check this, because your event will run twice if you don't do it.
+            </summary>
+    </member>
+    <member name="P:RustBuster2016.API.Events.SupplySignalExplosionEvent.SignalGrenade">
+      <summary>
+            Returns the SignalGrenade class.
+            </summary>
+    </member>
+    <member name="P:RustBuster2016.API.Events.SupplySignalExplosionEvent.ExplosionObject">
+      <summary>
+            This returns the explosion's object, but only "AfterExplosion". Otherwise null.
+            </summary>
+    </member>
+    <member name="P:RustBuster2016.API.Events.SupplySignalExplosionEvent.SmokeEffectTime">
+      <summary>
+            Gets or Sets the amount of seconds of the smoke grenade's smoke effect time.
+            Can ONLY use at "AfterExplosion"
+            </summary>
+    </member>
+    <member name="T:RustBuster2016.API.Events.SystemTimerEvent">
+      <summary>
+            A thread-safe wrapper for System.Timers.Timer, designed to be used identically to the Unity-based TimedEvent.
+            Use this if you need to create a timer from the thread, without accessing the gameobject and other unity class
+            provided in the TimedEvent class, which would result your server into crashing.
+            </summary>
+    </member>
+    <member name="E:RustBuster2016.API.Events.SystemTimerEvent.OnFire">
+      <summary>
+            Triggered when the timer interval elapses.
+            </summary>
+    </member>
+    <member name="E:RustBuster2016.API.Events.SystemTimerEvent.OnKilled">
+      <summary>
+            Triggered when the timer is killed. Passes the timer name to handle dictionary cleanup.
+            </summary>
+    </member>
+    <member name="P:RustBuster2016.API.Events.SystemTimerEvent.Name">
+      <summary>
+            Gets or sets the name of the timer.
+            </summary>
+    </member>
+    <member name="P:RustBuster2016.API.Events.SystemTimerEvent.PluginName">
+      <summary>
+            Gets or sets the name of the plugin that created the timer.
+            </summary>
+    </member>
+    <member name="P:RustBuster2016.API.Events.SystemTimerEvent.Interval">
+      <summary>
+            Gets or sets the interval in milliseconds.
+            </summary>
+    </member>
+    <member name="P:RustBuster2016.API.Events.SystemTimerEvent.Args">
+      <summary>
+            Dictionary of custom arguments passed to parallel timers.
+            </summary>
+    </member>
+    <member name="P:RustBuster2016.API.Events.SystemTimerEvent.AutoReset">
+      <summary>
+            Gets or sets a value indicating whether the timer should repeat.
+            </summary>
+    </member>
+    <member name="P:RustBuster2016.API.Events.SystemTimerEvent.MaxElapsedCount">
+      <summary>
+            Gets or sets the maximum amount of times this timer can fire before it kills itself. 0 is infinite.
+            </summary>
+    </member>
+    <member name="M:RustBuster2016.API.Events.SystemTimerEvent.Start">
+      <summary>
+            Starts the timer.
+            </summary>
+    </member>
+    <member name="M:RustBuster2016.API.Events.SystemTimerEvent.Stop">
+      <summary>
+            Stops the timer from firing, but does not destroy it.
+            </summary>
+    </member>
+    <member name="M:RustBuster2016.API.Events.SystemTimerEvent.Kill">
+      <summary>
+            Stops and destroys the timer, triggering the OnKilled event.
+            </summary>
+    </member>
+    <member name="M:RustBuster2016.API.Events.SystemTimerEvent.Dispose">
+      <summary>
+            Clears the underlying timer resources.
+            </summary>
+    </member>
+    <member name="E:RustBuster2016.API.Events.TimedEvent.OnKilled">
+      <summary>
+            This event is fired when the timer is killed/disposed.
+            </summary>
+    </member>
+    <member name="E:RustBuster2016.API.Events.TimedEvent.OnFire">
+      <summary>
+            This event is fired when the timer elapses.
+            </summary>
+    </member>
+    <member name="M:RustBuster2016.API.Events.TimedEvent.OnDisable">
+      <summary>
+            Do not call this method directly. This is used by Unity when the object is disabled.
+            </summary>
+    </member>
+    <member name="M:RustBuster2016.API.Events.TimedEvent.Start">
+      <summary>
+            Starts the timer.
+            </summary>
+    </member>
+    <member name="M:RustBuster2016.API.Events.TimedEvent.Stop">
+      <summary>
+            Stops the timer.
+            </summary>
+    </member>
+    <member name="M:RustBuster2016.API.Events.TimedEvent.Kill">
+      <summary>
+            Stops and Disposes the timer.
+            </summary>
+    </member>
+    <member name="P:RustBuster2016.API.Events.TimedEvent.AutoReset">
+      <summary>
+            True if the timer should raise the elapsed event each time it elapses, false if only once.
+            Basically true means the timer will keep running forever, false means only once.
+            </summary>
+    </member>
+    <member name="P:RustBuster2016.API.Events.TimedEvent.MaxElapsedCount">
+      <summary>
+            The maximum number of times the timer should fire before killing itself. 
+            0 = infinite. Only considered if autoreset is true.
+            </summary>
+    </member>
+    <member name="P:RustBuster2016.API.Events.TimedEvent.Args">
+      <summary>
+            The custom arguments to store in the timer
+            </summary>
+    </member>
+    <member name="P:RustBuster2016.API.Events.TimedEvent.Interval">
+      <summary>
+            The interval to run in milliseconds
+            1000 = 1 second
+            </summary>
+    </member>
+    <member name="P:RustBuster2016.API.Events.TimedEvent.Name">
+      <summary>
+            The name of the Timer for easier identification
+            </summary>
+    </member>
+    <member name="P:RustBuster2016.API.Events.TimedEvent.PluginName">
+      <summary>
+            The name of the plugin that created this timer
+            This is optionally set by the plugin system
+            </summary>
+    </member>
+    <member name="P:RustBuster2016.API.Events.TimedEvent.TimeLeft">
+      <summary>
+            The time left for the next tick
+            </summary>
+    </member>
+    <member name="P:RustBuster2016.API.Events.TimedEvent.LastTick">
+      <summary>
+            The last tick time.
+            </summary>
+    </member>
+    <member name="P:RustBuster2016.API.Events.TimedEvent.LastTickDate">
+      <summary>
+            The last tick, but DateTime for easier calculations and more reliability
+            </summary>
+    </member>
+    <member name="P:RustBuster2016.API.Events.TimedEvent.ElapsedCount">
+      <summary>
+            The amount of time the timer has elapsed so far
+            </summary>
+    </member>
+    <member name="P:RustBuster2016.API.Events.TimedEvent.IsRunning">
+      <summary>
+            Tells whether the timer is currently running.
+            </summary>
+    </member>
+    <member name="P:RustBuster2016.API.Events.TimedEvent.IsKilled">
+      <summary>
+            Tells whether the timer has been killed/disposed.
+            </summary>
+    </member>
+    <member name="T:RustBuster2016.API.Events.WebSocketEvent">
+      <summary>
+            Represents an event triggered during a WebSocket interaction in the context of a plugin.
+            </summary>
+      <remarks>
+            The WebSocketEvent provides information about a particular WebSocket message, such as the
+            originating plugin, the socket identifier, and the message content. This class is primarily
+            used in the event system to pass data to relevant event handlers and plugin operations.
+            </remarks>
+    </member>
+    <member name="P:RustBuster2016.API.Events.WebSocketEvent.PluginName">
+      <summary>
+            Gets the name of the plugin associated with the WebSocket event.
+            </summary>
+    </member>
+    <member name="P:RustBuster2016.API.Events.WebSocketEvent.SocketId">
+      <summary>
+            Gets the unique identifier associated with the WebSocket connection.
+            </summary>
+    </member>
+    <member name="P:RustBuster2016.API.Events.WebSocketEvent.Message">
+      <summary>
+            Gets the message data associated with the WebSocket event.
+            </summary>
+    </member>
+    <member name="P:RustBuster2016.API.Events.WebSocketEvent.ErrorMessage">
+      <summary>
+            Gets the error message associated with a failed WebSocket operation or connection close.
+            Might be null.
+            </summary>
+    </member>
+    <member name="M:RustBuster2016.API.Extensions.Combine(System.String,System.String)">
+      <summary>
+            Combines two path while handling the root check.
+            </summary>
+      <param name="path1"></param>
+      <param name="path2"></param>
+      <returns></returns>
+    </member>
+    <member name="M:RustBuster2016.API.Extensions.IsNullOrWhiteSpace(System.String)">
+      <summary>
+            Checks if a string is null or consists only of white-space characters.
+            </summary>
+      <param name="value">Input.</param>
+      <returns></returns>
+    </member>
+    <member name="F:RustBuster2016.API.Hooks.RBVersion">
+      <summary>
+            Returns RB's version.
+            </summary>
+    </member>
+    <member name="F:RustBuster2016.API.Hooks.TODComps">
+      <summary>
+            Returns the weather component assigned by RB.
+            </summary>
+    </member>
+    <member name="E:RustBuster2016.API.Hooks.OnRustBusterClientConsole">
+      <summary>
+            Runs when a console message is sent or received.
+            </summary>
+    </member>
+    <member name="E:RustBuster2016.API.Hooks.OnRustBusterMetabolismDamage">
+      <summary>
+            Runs when a metabolism is damaged, mostly a player or animal.
+            </summary>
+    </member>
+    <member name="E:RustBuster2016.API.Hooks.OnRustBusterStructureDamage">
+      <summary>
+            Runs when a structure is damaged.
+            </summary>
+    </member>
+    <member name="E:RustBuster2016.API.Hooks.OnRustBusterClientMove">
+      <summary>
+            Runs when the player is moving.
+            </summary>
+    </member>
+    <member name="E:RustBuster2016.API.Hooks.OnRustBusterClientChat">
+      <summary>
+            Runs when a player chats.
+            </summary>
+    </member>
+    <member name="E:RustBuster2016.API.Hooks.OnRustBusterClientItemUse">
+      <summary>
+            Runs when a player uses an item.
+            </summary>
+    </member>
+    <member name="E:RustBuster2016.API.Hooks.OnRustBusterClientDeathScreen">
+      <summary>
+            Runs when a player dies, or wants to respawn.
+            </summary>
+    </member>
+    <member name="E:RustBuster2016.API.Hooks.OnRustBusterClientCraft">
+      <summary>
+            Runs when a player wants to craft something.
+            </summary>
+    </member>
+    <member name="E:RustBuster2016.API.Hooks.OnRustBusterCellClickEvent">
+      <summary>
+            Runs when a player clicks or moves an item in his inventory.
+            </summary>
+    </member>
+    <member name="E:RustBuster2016.API.Hooks.OnRustBusterCraftWindowClick">
+      <summary>
+            Runs when a player selects a craft item from the list.
+            </summary>
+    </member>
+    <member name="E:RustBuster2016.API.Hooks.OnRustBusterC4Explosion">
+      <summary>
+            Runs when a C4 explodes or is about to explode.
+            </summary>
+    </member>
+    <member name="E:RustBuster2016.API.Hooks.OnRustBusterGrenadeExplode">
+      <summary>
+            Runs when a Grenade explodes or is about to explode.
+            </summary>
+    </member>
+    <member name="E:RustBuster2016.API.Hooks.OnRustBusterSupplySignalExplode">
+      <summary>
+            Runs when a Signal Grenade explodes or is about to explode.
+            </summary>
+    </member>
+    <member name="E:RustBuster2016.API.Hooks.OnRustBusterClientInventoryToggle">
+      <summary>
+            Runs when the player opens or closes his inventory.
+            </summary>
+    </member>
+    <member name="E:RustBuster2016.API.Hooks.OnRustBusterClientPluginsLoaded">
+      <summary>
+            Runs when the ALL client plugins were loaded in RB.
+            </summary>
+    </member>
+    <member name="E:RustBuster2016.API.Hooks.OnRustBusterClientFilesDownloaded">
+      <summary>
+            Runs when ALL the client RBDownloadables were downloaded.
+            </summary>
+    </member>
+    <member name="E:RustBuster2016.API.Hooks.OnRustBusterMessageReceived">
+      <summary>
+            Runs when a message is received from the server.
+            </summary>
+    </member>
+    <member name="E:RustBuster2016.API.Hooks.OnRustBusterWeaponFire">
+      <summary>
+            Runs when a weapon is fired.
+            </summary>
+    </member>
+    <member name="E:RustBuster2016.API.Hooks.OnRustBusterShotgunFire">
+      <summary>
+            Runs when a shotgun is fired.
+            </summary>
+    </member>
+    <member name="E:RustBuster2016.API.Hooks.OnRustBusterBowFire">
+      <summary>
+            Runs when an arrow is shot using a Bow.
+            </summary>
+    </member>
+    <member name="E:RustBuster2016.API.Hooks.OnRustBusterMeleeFire">
+      <summary>
+            Runs when a melee weapon is swung.
+            </summary>
+    </member>
+    <member name="E:RustBuster2016.API.Hooks.OnRustBusterClientDeathScreenDisAppear">
+      <summary>
+            Runs when the death screen disappears.
+            </summary>
+    </member>
+    <member name="E:RustBuster2016.API.Hooks.OnRustBusterLootWindowOpen">
+      <summary>
+            Runs when a loot window is opened.
+            </summary>
+    </member>
+    <member name="E:RustBuster2016.API.Hooks.OnRustBusterLootWindowClose">
+      <summary>
+            Runs when a loot window is closed.
+            </summary>
+    </member>
+    <member name="E:RustBuster2016.API.Hooks.OnRustBusterClientReady">
+      <summary>
+            Runs when the client loaded, and It's ready in the server.
+            </summary>
+    </member>
+    <member name="E:RustBuster2016.API.Hooks.OnRustBusterClientPluginLoaded">
+      <summary>
+            Runs when a client side plugin is loaded.
+            </summary>
+    </member>
+    <member name="E:RustBuster2016.API.Hooks.OnRustBusterClientPluginUnLoaded">
+      <summary>
+            Runs when a client side plugin is unloaded.
+            </summary>
+    </member>
+    <member name="E:RustBuster2016.API.Hooks.OnRustBusterItemAdded">
+      <summary>
+            Runs when an item is assigned/added to the inventory payload.
+            </summary>
+    </member>
+    <member name="E:RustBuster2016.API.Hooks.OnRustBusterItemRemoved">
+      <summary>
+            Runs when an item is removed from the inventory.
+            </summary>
+    </member>
+    <member name="E:RustBuster2016.API.Hooks.OnRustBusterResearch">
+      <summary>
+            Runs when an item is researched.
+            </summary>
+    </member>
+    <member name="E:RustBuster2016.API.Hooks.OnRustBusterPluginMessage">
+      <summary>
+            This delegate runs when a plugin sends a message to another plugin.
+            </summary>
+    </member>
+    <member name="E:RustBuster2016.API.Hooks.OnWebSocketMessage">
+      <summary>
+            This delegate runs when a websocket message is received.
+            </summary>
+    </member>
+    <member name="E:RustBuster2016.API.Hooks.OnWebSocketConnected">
+      <summary>
+            This delegate runs when a websocket connection is established.
+            </summary>
+    </member>
+    <member name="E:RustBuster2016.API.Hooks.OnWebSocketClosed">
+      <summary>
+            This delegate runs when a websocket connection is closed.
+            </summary>
+    </member>
+    <member name="E:RustBuster2016.API.Hooks.OnWebSocketError">
+      <summary>
+            This delegate runs when a websocket encounters an error.
+            </summary>
+    </member>
+    <member name="E:RustBuster2016.API.Hooks.OnRustBusterLocalPlayerAttach">
+      <summary>
+            Runs right before the local player is attached to an anchor (a vehicle seat,
+            a mounted turret, a chair). Cancel it to block the mount.
+            </summary>
+    </member>
+    <member name="E:RustBuster2016.API.Hooks.OnRustBusterLocalPlayerAttached">
+      <summary>
+            Runs after the local player has been attached and the request flags applied.
+            </summary>
+    </member>
+    <member name="E:RustBuster2016.API.Hooks.OnRustBusterLocalPlayerDetach">
+      <summary>
+            Runs right before the local player is detached from an anchor.
+            Only cancellable when DetachReason is Requested.
+            </summary>
+    </member>
+    <member name="E:RustBuster2016.API.Hooks.OnRustBusterLocalPlayerDetached">
+      <summary>
+            Runs after the local player has been detached and everything restored.
+            </summary>
+    </member>
+    <member name="M:RustBuster2016.API.Hooks.LogData(System.String,System.String)">
+      <summary>
+            Logs a message to the RustBusterPlugins.log file using the specified plugin name and message.
+            </summary>
+      <param name="YourPluginName">The name of the plugin generating the log entry.</param>
+      <param name="Message">The message to be logged.</param>
+    </member>
+    <member name="P:RustBuster2016.API.Hooks.GameDirectory">
+      <summary>
+            Returns the path to the root folder where rust.exe is located.
+            </summary>
+    </member>
+    <member name="P:RustBuster2016.API.Hooks.PlayerName">
+      <summary>
+            Returns the Player's name.
+            </summary>
+    </member>
+    <member name="P:RustBuster2016.API.Hooks.SteamID">
+      <summary>
+            Returns the Player's SteamID
+            </summary>
+    </member>
+    <member name="P:RustBuster2016.API.Hooks.HWID">
+      <summary>
+            Returns the Player's HWID.
+            </summary>
+    </member>
+    <member name="M:RustBuster2016.API.Hooks.TakeManualScreenshot(System.Action{System.Byte[]})">
+      <summary>
+            Takes a screenshot.
+            The specified method will be called with the byte array once finished.
+            Returns null if RB failed to create the screenshot for some odd reason, or
+            when your character didn't load yet.
+            </summary>
+      <param name="MethodToCall"></param>
+      <returns></returns>
+    </member>
+    <member name="M:RustBuster2016.API.Hooks.CompressByte(System.Byte[])">
+      <summary>
+            Uses LZ4 Compression methods to compress the target byte array.
+            </summary>
+      <param name="array"></param>
+      <returns></returns>
+    </member>
+    <member name="M:RustBuster2016.API.Hooks.DeCompressByte(System.Byte[])">
+      <summary>
+            Uses LZ4 DeCompression methods to decompress the target byte array.
+            </summary>
+      <param name="array"></param>
+      <returns></returns>
+    </member>
+    <member name="P:RustBuster2016.API.Hooks.LocalPlayer">
+      <summary>
+            Returns the localplayer. Might be null if we are not connected yet or didn't load yet.
+            </summary>
+    </member>
+    <member name="P:RustBuster2016.API.Hooks.ClientSidePlugins">
+      <summary>
+            Returns all the currently loaded client side plugin names.
+            </summary>
+    </member>
+    <member name="M:RustBuster2016.API.Hooks.GetPlayerList">
+      <summary>
+            Returns the list of the currently ALIVE online players.
+            </summary>
+      <returns></returns>
+    </member>
+    <member name="T:RustBuster2016.API.KeyboardAPI">
+      <summary>
+            My own question as reference: https://stackoverflow.com/questions/35138778/sending-keys-to-a-directx-game
+            http://www.gamespp.com/directx/directInputKeyboardScanCodes.html
+            </summary>
+    </member>
+    <member name="M:RustBuster2016.API.KeyboardAPI.SendKey(RustBuster2016.API.KeyboardAPI.DirectXKeyStrokes,System.Boolean,RustBuster2016.API.KeyboardAPI.InputType)">
+      <summary>
+            Sends a directx key.
+            http://www.gamespp.com/directx/directInputKeyboardScanCodes.html
+            </summary>
+      <param name="key"></param>
+      <param name="KeyUp"></param>
+      <param name="inputType"></param>
+    </member>
+    <member name="M:RustBuster2016.API.KeyboardAPI.SendKey(System.UInt16,System.Boolean,RustBuster2016.API.KeyboardAPI.InputType)">
+      <summary>
+            Sends a directx key.
+            http://www.gamespp.com/directx/directInputKeyboardScanCodes.html
+            </summary>
+      <param name="key"></param>
+      <param name="KeyUp"></param>
+      <param name="inputType"></param>
+    </member>
+    <member name="T:RustBuster2016.API.AttachFlags">
+      <summary>
+            Behaviour toggles for an attachment. Every one of these is optional: RustBuster
+            only does what you ask it to, and anything you leave off you are free to drive
+            yourself from plugin code.
+            </summary>
+    </member>
+    <member name="F:RustBuster2016.API.AttachFlags.None">
+      <summary>RustBuster tracks the attachment and runs the watchdog, nothing else.</summary>
+    </member>
+    <member name="F:RustBuster2016.API.AttachFlags.FollowAnchor">
+      <summary>
+            Writes the character transform from the anchor every FixedUpdate and LateUpdate.
+            This writes Transform.position directly and NOT Character.origin, because the
+            origin setter is gated on lockMovement and would silently do nothing while
+            attached.
+            </summary>
+    </member>
+    <member name="F:RustBuster2016.API.AttachFlags.LockMovement">
+      <summary>
+            Sets Character.lockMovement. This is the switch that stops CCMotor.BindCharacter
+            from writing Character.origin out from under you on every physics step, so leave
+            it on whenever FollowAnchor is on.
+            </summary>
+    </member>
+    <member name="F:RustBuster2016.API.AttachFlags.LockLook">
+      <summary>Sets Character.lockLook, which freezes the view completely.</summary>
+    </member>
+    <member name="F:RustBuster2016.API.AttachFlags.ClampLook">
+      <summary>Clamps eyesYaw/eyesPitch relative to the anchor using the request limits.</summary>
+    </member>
+    <member name="F:RustBuster2016.API.AttachFlags.FreezeMotor">
+      <summary>
+            Disables the CCMotor so it stops simulating and stops fighting the anchor. On
+            detach the motor is re-enabled and Teleported to the dismount point, otherwise
+            the CCTotemPole snaps the player back to wherever they boarded.
+            </summary>
+    </member>
+    <member name="F:RustBuster2016.API.AttachFlags.IgnoreAnchorCollision">
+      <summary>
+            Physics.IgnoreCollision between the player capsule and every collider under the
+            anchor root. The capsule lives on the CCTotemPole, which Character.CreateCCMotor
+            instantiates as a separate root GameObject, not as a child of the Character.
+            </summary>
+    </member>
+    <member name="F:RustBuster2016.API.AttachFlags.SuppressFallDamage">
+      <summary>Zeroes CCMotor.velocity on attach and again on detach.</summary>
+    </member>
+    <member name="F:RustBuster2016.API.AttachFlags.PlaceOnDetach">
+      <summary>
+            On detach, sweeps for a clear spot beside the anchor and puts the player and the
+            motor there instead of leaving them inside the vehicle.
+            </summary>
+    </member>
+    <member name="F:RustBuster2016.API.AttachFlags.Default">
+      <summary>Everything a normal vehicle seat wants.</summary>
+    </member>
+    <member name="T:RustBuster2016.API.AttachRequest">
+      <summary>
+            Describes an attachment you want RustBuster to set up. Only Anchor is required.
+            </summary>
+    </member>
+    <member name="P:RustBuster2016.API.AttachRequest.Owner">
+      <summary>
+            Your plugin name. Same string you pass to Hooks.LogData, used for logging and for
+            auto detaching when your plugin is unloaded.
+            </summary>
+    </member>
+    <member name="P:RustBuster2016.API.AttachRequest.Anchor">
+      <summary>
+            The seat transform on the vehicle. Required.
+            </summary>
+    </member>
+    <member name="P:RustBuster2016.API.AttachRequest.Flags">
+      <summary>
+            What RustBuster should do for you. Defaults to AttachFlags.Default.
+            </summary>
+    </member>
+    <member name="P:RustBuster2016.API.AttachRequest.LocalOffset">
+      <summary>
+            Offset from the anchor, in anchor local space.
+            </summary>
+    </member>
+    <member name="P:RustBuster2016.API.AttachRequest.YawLimit">
+      <summary>
+            Maximum yaw deviation from the anchor forward, in degrees. Used with ClampLook.
+            Anything from 180 up disables the yaw clamp.
+            </summary>
+    </member>
+    <member name="P:RustBuster2016.API.AttachRequest.PitchMin">
+      <summary>
+            Minimum pitch in degrees. Used with ClampLook.
+            </summary>
+    </member>
+    <member name="P:RustBuster2016.API.AttachRequest.PitchMax">
+      <summary>
+            Maximum pitch in degrees. Used with ClampLook.
+            </summary>
+    </member>
+    <member name="P:RustBuster2016.API.AttachRequest.FallGraceMs">
+      <summary>
+            Milliseconds after detach during which LocalAttachment.IsInFallGrace stays true.
+            Informational: read it from your own FallDamage handling if you want to swallow
+            the first impact after someone steps out of a moving vehicle.
+            </summary>
+    </member>
+    <member name="P:RustBuster2016.API.AttachRequest.UserData">
+      <summary>
+            Anything you want handed back to you on the handle and in the detach events.
+            </summary>
+    </member>
+    <member name="T:RustBuster2016.API.AttachmentHandle">
+      <summary>
+            Live handle to the current attachment. Flags, LocalOffset, Anchor and the look limits
+            can all be changed while it is valid, so you can unlock the view when the car stops or
+            slide the player to another seat without a detach and reattach cycle.
+            </summary>
+    </member>
+    <member name="P:RustBuster2016.API.AttachmentHandle.Owner">
+      <summary>
+            Returns the name of the plugin that owns this attachment.
+            </summary>
+    </member>
+    <member name="P:RustBuster2016.API.AttachmentHandle.UserData">
+      <summary>
+            Returns whatever you put in AttachRequest.UserData.
+            </summary>
+    </member>
+    <member name="P:RustBuster2016.API.AttachmentHandle.AttachedAt">
+      <summary>
+            Returns Time.time at the moment the attachment was created.
+            </summary>
+    </member>
+    <member name="P:RustBuster2016.API.AttachmentHandle.IsValid">
+      <summary>
+            Returns false once the attachment has been torn down. A stale handle is inert;
+            calling Detach on it does nothing.
+            </summary>
+    </member>
+    <member name="P:RustBuster2016.API.AttachmentHandle.Anchor">
+      <summary>
+            Gets or sets the transform the player is riding. Assigning a new one moves the
+            player to it on the next tick, which is how you implement seat swapping.
+            Collision ignores are set up against the original anchor's root, so swapping to a
+            transform under a different root leaves those ignores pointing at the old vehicle.
+            </summary>
+    </member>
+    <member name="P:RustBuster2016.API.AttachmentHandle.Flags">
+      <summary>
+            Gets or sets what RustBuster is doing for you. Safe to change mid ride, but note
+            that toggling FreezeMotor or IgnoreAnchorCollision after the fact is not applied
+            retroactively; detach and reattach for those two.
+            </summary>
+    </member>
+    <member name="P:RustBuster2016.API.AttachmentHandle.LocalOffset">
+      <summary>
+            Gets or sets the offset from the anchor, in anchor local space.
+            </summary>
+    </member>
+    <member name="P:RustBuster2016.API.AttachmentHandle.YawLimit">
+      <summary>
+            Gets or sets the maximum yaw deviation from the anchor forward, in degrees.
+            </summary>
+    </member>
+    <member name="P:RustBuster2016.API.AttachmentHandle.PitchMin">
+      <summary>
+            Gets or sets the minimum pitch in degrees.
+            </summary>
+    </member>
+    <member name="P:RustBuster2016.API.AttachmentHandle.PitchMax">
+      <summary>
+            Gets or sets the maximum pitch in degrees.
+            </summary>
+    </member>
+    <member name="P:RustBuster2016.API.AttachmentHandle.FallGraceMs">
+      <summary>
+            Gets or sets the post detach fall grace window, in milliseconds.
+            </summary>
+    </member>
+    <member name="M:RustBuster2016.API.AttachmentHandle.Detach">
+      <summary>
+            Detaches the local player with DetachReason.Requested. Idempotent, never throws.
+            Returns false if the handle is stale or a plugin cancelled the detach.
+            </summary>
+    </member>
+    <member name="T:RustBuster2016.API.LocalAttachment">
+      <summary>
+             Local player seat attachment.
+            
+             This is client side only: it moves YOUR player on YOUR machine and tells nobody. The
+             server half of your plugin owns who is allowed in the seat and has to broadcast it;
+             call Attach when that message arrives, not straight out of your usable handler, or
+             remote players will see the driver standing in a field.
+            
+             HumanController.SendToServer sends Character.origin on its own schedule and does not
+             check lockMovement, so the position RustBuster writes here does replicate normally.
+             </summary>
+    </member>
+    <member name="F:RustBuster2016.API.LocalAttachment.DismountMask">
+      <summary>
+            Layers treated as solid when looking for a dismount spot. Defaults to everything.
+            </summary>
+    </member>
+    <member name="F:RustBuster2016.API.LocalAttachment.DismountSearchRadius">
+      <summary>
+            How far out from the anchor to sweep for a clear dismount spot, in metres.
+            </summary>
+    </member>
+    <member name="F:RustBuster2016.API.LocalAttachment.DismountCapsuleRadius">
+      <summary>
+            Capsule size used for the dismount sweep. The player capsule lives on the
+            CCTotemPole rather than a Unity CharacterController, so rather than reach into
+            that geometry these are plain tunables.
+            </summary>
+    </member>
+    <member name="F:RustBuster2016.API.LocalAttachment.DismountCapsuleHeight">
+      <summary>
+            Capsule height used for the dismount sweep.
+            </summary>
+    </member>
+    <member name="P:RustBuster2016.API.LocalAttachment.Current">
+      <summary>
+            Returns the handle for the current attachment, or null if nothing is attached.
+            </summary>
+    </member>
+    <member name="P:RustBuster2016.API.LocalAttachment.IsAttached">
+      <summary>
+            Returns true when the local player is currently attached to something.
+            </summary>
+    </member>
+    <member name="P:RustBuster2016.API.LocalAttachment.IsInFallGrace">
+      <summary>
+            Returns true during the post detach fall grace window. Purely informational:
+            RustBuster does not suppress fall damage for you, it only tells you the player
+            just stepped out of something.
+            </summary>
+    </member>
+    <member name="P:RustBuster2016.API.LocalAttachment.LocalCharacter">
+      <summary>
+            Returns the local Character, or null if you are not connected or not spawned yet.
+            </summary>
+    </member>
+    <member name="M:RustBuster2016.API.LocalAttachment.Attach(RustBuster2016.API.AttachRequest)">
+      <summary>
+            Attaches the local player to an anchor and returns a live handle, or null when the
+            attach failed or a plugin cancelled it. If something is already attached it is
+            detached first with DetachReason.Replaced.
+            </summary>
+      <param name="request">The attachment to set up. Anchor is required.</param>
+    </member>
+    <member name="M:RustBuster2016.API.LocalAttachment.Detach(RustBuster2016.API.AttachmentHandle)">
+      <summary>
+            Detaches the given handle with DetachReason.Requested. Returns false if the handle
+            is stale, is not the current one, or a plugin cancelled the detach. Never throws.
+            </summary>
+      <param name="handle">The handle returned by Attach.</param>
+    </member>
+    <member name="M:RustBuster2016.API.LocalAttachment.ForceDetach(RustBuster2016.API.Events.DetachReason)">
+      <summary>
+            Detaches whatever is currently attached for the given reason. Not cancellable.
+            </summary>
+      <param name="reason">Why the player is being detached.</param>
+    </member>
+    <member name="M:RustBuster2016.API.LocalAttachment.GetMotorColliders(Character)">
+      <summary>
+            Returns the colliders that make up the local player capsule. Character.CreateCCMotor
+            instantiates the CCTotemPole as its own root object, so these are NOT children of
+            the Character transform.
+            </summary>
+    </member>
+    <member name="M:RustBuster2016.API.LocalAttachment.TryFindDismountPoint(Character,UnityEngine.Transform,UnityEngine.Vector3@)">
+      <summary>
+            Sweeps outward from the anchor for a capsule clear spot to put the player when they
+            step out. Falls back to the anchor position plus a metre and a half and returns
+            false when nothing is free.
+            </summary>
+    </member>
+    <member name="M:RustBuster2016.API.LocalAttachment.ZeroFallVelocity(Character)">
+      <summary>
+            Zeroes the motor velocity so speed built up before boarding does not resume on
+            dismount. Called on detach only: the CCMotor velocity setter also clears the
+            grounded flag and can raise OnExternalVelocity, which is harmless as the player
+            is about to fall or land anyway, but would mislead HumanController for the whole
+            ride if it were done on attach.
+            </summary>
+    </member>
+    <member name="T:RustBuster2016.API.Tools.PluginMessageResult">
+      <summary>
+            Represents the result of a plugin messaging operation.
+            Encapsulates the response status and the associated event data.
+            </summary>
+    </member>
+    <member name="P:RustBuster2016.API.Tools.PluginMessageResult.Status">
+      <summary>
+            Represents the status of a plugin message response.
+            Determines the outcome of an inter-plugin communication attempt.
+            Possible values include states such as Success, TargetNotFound, TargetDisabled, Error, and Rejected.
+            </summary>
+    </member>
+    <member name="P:RustBuster2016.API.Tools.PluginMessageResult.Event">
+      <summary>
+            Gets the associated <see cref="T:RustBuster2016.API.Events.PluginMessageEvent" /> instance that contains
+            the details of the plugin message communication event.
+            </summary>
+    </member>
+    <member name="T:RustBuster2016.API.Tools.PluginMessaging">
+      <summary>
+            API for Inter-Plugin Communication.
+            Provides synchronous and asynchronous methods for cross-module messaging.
+            </summary>
+    </member>
+    <member name="M:RustBuster2016.API.Tools.PluginMessaging.Send(System.String,System.String,System.Object)">
+      <summary>
+            Sends a message to a specific plugin and returns the encapsulated result.
+            </summary>
+      <param name="sender">The name of the plugin sending the message.</param>
+      <param name="targetName">The name of the target plugin.</param>
+      <param name="message">The object payload.</param>
+      <returns>A PluginMessageResult containing the delivery status and event data.</returns>
+    </member>
+    <member name="M:RustBuster2016.API.Tools.PluginMessaging.SendAsync(System.String,System.String,System.Object,System.Action{RustBuster2016.API.Tools.PluginMessageResult},System.Boolean)">
+      <summary>
+            Sends a message asynchronously. The callback provides the encapsulated result on the Unity Main Thread.
+            </summary>
+      <param name="sender">The name of the plugin sending the message.</param>
+      <param name="targetName">The name of the target plugin.</param>
+      <param name="message">The object payload.</param>
+      <param name="callback">Action executed when finished (PluginMessageResult).</param>
+      <param name="runInThreadPool">If true, the Hook dispatch occurs on a background thread.</param>
+    </member>
+    <member name="T:RustBuster2016.API.Tools.RustBusterPluginLogger">
+      <summary>
+            Provides logging functionality for RustBuster plugins, allowing messages to be written to a log file and the Unity console.
+            </summary>
+      <remarks>
+            This class ensures thread-safe logging and creates a separate log file for each day in the "RB_Logs" directory.
+            </remarks>
+    </member>
+    <member name="M:RustBuster2016.API.Tools.RustBusterPluginLogger.Log(System.String,System.String)">
+      <summary>
+            Logs a message to the RustBuster plugin log file and Unity console with a timestamp and plugin name.
+            </summary>
+      <param name="pluginName">The name of the plugin generating the log entry.</param>
+      <param name="message">The message to log.</param>
+    </member>
+    <member name="T:RustBuster2016.API.Tools.ScriptWebSocket">
+      <summary>
+            Represents a WebSocket client implementation using native WinHTTP.
+            Designed to provide secure, background-threaded WebSocket connections for plugins.
+            Warning: This class is not thread safe. Only Connect and Close from the main thread ideally from a single plugin.
+            Send operation can be called from any thread.
+            </summary>
+    </member>
+    <member name="P:RustBuster2016.API.Tools.ScriptWebSocket.SocketId">
+      <summary>
+            Gets the unique identifier assigned to this WebSocket connection.
+            </summary>
+    </member>
+    <member name="P:RustBuster2016.API.Tools.ScriptWebSocket.PluginName">
+      <summary>
+            Gets the name of the plugin that owns this WebSocket connection.
+            </summary>
+    </member>
+    <member name="P:RustBuster2016.API.Tools.ScriptWebSocket.IsConnected">
+      <summary>
+            Gets a value indicating whether the WebSocket is currently connected and open.
+            </summary>
+    </member>
+    <member name="P:RustBuster2016.API.Tools.ScriptWebSocket.Url">
+      <summary>
+            Gets the target URL of the WebSocket connection.
+            </summary>
+    </member>
+    <member name="P:RustBuster2016.API.Tools.ScriptWebSocket.BufferSize">
+      <summary>
+            Gets the buffer size used for reading WebSocket messages.
+            Specifies the maximum chunk size, in bytes, that can be read in a single operation.
+            </summary>
+    </member>
+    <member name="M:RustBuster2016.API.Tools.ScriptWebSocket.Connect">
+      <summary>
+            Initiates the WebSocket connection asynchronously on a background thread.
+            </summary>
+    </member>
+    <member name="M:RustBuster2016.API.Tools.ScriptWebSocket.Send(System.String)">
+      <summary>
+            Sends a UTF-8 encoded text message over the WebSocket asynchronously.
+            </summary>
+      <param name="message">The text message to send.</param>
+      <returns>True if the send operation was queued successfully; otherwise, false if disconnected or uninitialized.</returns>
+    </member>
+    <member name="M:RustBuster2016.API.Tools.ScriptWebSocket.Close(System.String)">
+      <summary>
+            Closes the WebSocket connection, releases WinHTTP handles, and fires the Disconnected event.
+            Does NOT dispose the object, meaning it can potentially be reconnected later.
+            </summary>
+      <param name="errorMessage">Optional error message explaining why the socket was closed.</param>
+    </member>
+    <member name="M:RustBuster2016.API.Tools.ScriptWebSocket.Close">
+      <summary>
+            Closes the WebSocket connection, releases WinHTTP handles, and fires the Disconnected event.
+            Does NOT dispose the object, meaning it can potentially be reconnected later.
+            </summary>
+    </member>
+    <member name="M:RustBuster2016.API.Tools.ScriptWebSocket.Dispose">
+      <summary>
+            Disposes the WebSocket connection, releasing all unmanaged resources and preventing further use.
+            </summary>
+    </member>
+    <member name="M:RustBuster2016.API.Tools.ScriptWebSocket.Dispose(System.Boolean,System.String)">
+      <summary>
+            Internal implementation of the dispose pattern.
+            </summary>
+    </member>
+    <member name="M:RustBuster2016.API.Tools.ScriptWebSocket.Finalize">
+      <summary>
+            Finalizer to ensure unmanaged WinHTTP handles are released if the object is garbage collected without being disposed.
+            </summary>
+    </member>
+    <member name="M:RustBuster2016.API.RustBusterPlugin.SendMessageToServer(System.String)">
+      <summary>
+            Synchronously sends a message to the server and returns the response payload.
+            </summary>
+      <param name="msg">The message to be sent to the server.</param>
+      <returns>The server's response payload as a string, or null if the operation fails.</returns>
+    </member>
+    <member name="M:RustBuster2016.API.RustBusterPlugin.SendMessageToServer(System.String,System.Action{System.Boolean,System.String})">
+      <summary>
+            Asynchronously sends a message to the server. Executes a callback with the status of the operation and the server response.
+            Callback: (bool isError, string responsePayload)
+            </summary>
+      <param name="msg">The message to send to the server.</param>
+      <param name="callback">A callback function that receives a boolean indicating whether an error occurred and the response payload as a string.</param>
+    </member>
+    <member name="F:RustBuster2016.API.Util.UStackable">
+      <summary>
+            All unstackable item names in rust legacy.
+            </summary>
+    </member>
+    <member name="M:RustBuster2016.API.Util.GetLineObject(UnityEngine.Vector3,UnityEngine.Vector3,UnityEngine.Vector3@,System.Int32)">
+      <summary>
+            Gets the object that is in line between two vectors.
+            </summary>
+      <param name="start"></param>
+      <param name="end"></param>
+      <param name="point"></param>
+      <param name="layerMask"></param>
+      <returns></returns>
+    </member>
+    <member name="M:RustBuster2016.API.Util.GetLookObject(Character,System.Int32)">
+      <summary>
+            Gets the object that the player is looking at.
+            </summary>
+      <param name="player"></param>
+      <param name="layerMask"></param>
+      <returns></returns>
+    </member>
+    <member name="M:RustBuster2016.API.Util.GetLookObject(UnityEngine.Ray,System.Single,System.Int32)">
+      <summary>
+            Gets the object where the ray is going at.
+            </summary>
+      <param name="ray"></param>
+      <param name="distance"></param>
+      <param name="layerMask"></param>
+      <returns></returns>
+    </member>
+    <member name="M:RustBuster2016.API.Util.GetLookObject(UnityEngine.Ray,UnityEngine.Vector3@,System.Single,System.Int32)">
+      <summary>
+            Gets the object where the ray is going at.
+            </summary>
+      <param name="ray"></param>
+      <param name="point"></param>
+      <param name="distance"></param>
+      <param name="layerMask"></param>
+      <returns></returns>
+    </member>
+    <member name="M:RustBuster2016.API.Util.GetLookRay(Character)">
+      <summary>
+            Gets the object where the player is looking at.
+            </summary>
+      <param name="character"></param>
+      <returns></returns>
+    </member>
+    <member name="M:RustBuster2016.API.Util.SplitInParts(System.String,System.Int32)">
+      <summary>
+            Splits the string to the specified amount of parts.
+            </summary>
+      <param name="s"></param>
+      <param name="partLength"></param>
+      <returns></returns>
+    </member>
+    <member name="M:RustBuster2016.API.Util.SplitInPartsLs(System.String,System.Int32)">
+      <summary>
+            Splits the string to the specified amount of parts.
+            </summary>
+      <param name="s"></param>
+      <param name="partLength"></param>
+      <returns></returns>
+    </member>
+    <member name="M:RustBuster2016.API.Util.ConvertNameToData(System.String)">
+      <summary>
+            Converts the provided item name to its associated data block.
+            </summary>
+      <param name="name">The name of the item to convert.</param>
+      <returns>The data block associated with the provided item name, or null if no match is found.</returns>
+    </member>
+    <member name="M:RustBuster2016.API.Util.BlueprintOfItem(ItemDataBlock)">
+      <summary>
+            Converts an item to its corresponding blueprint.
+            </summary>
+      <param name="item">The item to be converted.</param>
+      <returns>The blueprint associated with the given item, or null if no blueprint is found.</returns>
+    </member>
+    <member name="M:RustBuster2016.API.Util.GetInstanceField(System.Type,System.Object,System.String)">
+      <summary>
+            Gets the specified variable's value from the instance using reflection.
+            Works for static methods as well (pass null as instance).
+            </summary>
+      <param name="type">The <see cref="T:System.Type" /> of the class containing the field.</param>
+      <param name="instance">The object instance to read from. Pass <c>null</c> for static fields.</param>
+      <param name="fieldName">The case-sensitive name of the field to retrieve.</param>
+      <returns>The value of the field, or <c>null</c> if the field is not found or an error occurs.</returns>
+    </member>
+    <member name="M:RustBuster2016.API.Util.SetInstanceField(System.Type,System.Object,System.String,System.Object)">
+      <summary>
+            Sets the specified variable's value in the instance using reflection.
+            Works for static methods as well (pass null as instance).
+            </summary>
+      <param name="type">The <see cref="T:System.Type" /> of the class containing the field.</param>
+      <param name="instance">The object instance to modify. Pass <c>null</c> for static fields.</param>
+      <param name="fieldName">The case-sensitive name of the field to set.</param>
+      <param name="val">The new value to assign to the field.</param>
+    </member>
+    <member name="M:RustBuster2016.API.Util.GetInstanceProperty(System.Type,System.Object,System.String)">
+      <summary>
+            Gets the specified property's value from the instance using reflection.
+            Works for static methods as well (pass null as instance).
+            </summary>
+      <param name="type">The <see cref="T:System.Type" /> of the class containing the property.</param>
+      <param name="instance">The object instance to read from. Pass <c>null</c> for static properties.</param>
+      <param name="propertyName">The case-sensitive name of the property to retrieve.</param>
+      <returns>The value returned by the property's get accessor, or <c>null</c>.</returns>
+    </member>
+    <member name="M:RustBuster2016.API.Util.SetInstanceProperty(System.Type,System.Object,System.String,System.Object)">
+      <summary>
+            Sets the specified property's value in the instance using reflection.
+            Works for static methods as well (pass null as instance).
+            </summary>
+      <param name="type">The <see cref="T:System.Type" /> of the class containing the property.</param>
+      <param name="instance">The object instance to modify. Pass <c>null</c> for static properties.</param>
+      <param name="propertyName">The case-sensitive name of the property to set.</param>
+      <param name="val">The new value to assign via the property's set accessor.</param>
+    </member>
+    <member name="M:RustBuster2016.API.Util.CreateTimer(System.String,System.Int32,System.Action{RustBuster2016.API.Events.TimedEvent},System.Boolean,System.String,System.Int32)">
+      <summary>
+            Creates a timer with a callback.
+            </summary>
+      <param name="name">Name of the timer.</param>
+      <param name="timeoutDelay">Interval in milliseconds.</param>
+      <param name="callback">The callback function to execute when timer fires.</param>
+      <param name="autoReset">True if the timer should repeat, false for single execution.</param>
+      <param name="pluginName">The name of the plugin creating the event.</param>
+      <param name="maxElapsedCount">Optional: Max fires before killing. 0 = infinite.</param>
+      <returns>The created TimedEvent instance.</returns>
+    </member>
+    <member name="M:RustBuster2016.API.Util.CreateParallelTimer(System.String,System.Int32,System.Collections.Generic.Dictionary{System.String,System.Object},System.Action{RustBuster2016.API.Events.TimedEvent},System.Boolean,System.String,System.Int32)">
+      <summary>
+            Creates a parallel timer with arguments and a callback. Multiple timers with the same name can exist.
+            </summary>
+      <param name="name">Name of the timer.</param>
+      <param name="timeoutDelay">Interval in milliseconds.</param>
+      <param name="args">Dictionary of custom arguments to pass to the timer.</param>
+      <param name="callback">The callback function to execute when timer fires.</param>
+      <param name="autoReset">True if the timer should repeat, false for single execution.</param>
+      <param name="pluginName">The name of the plugin creating the event.</param>
+      <param name="maxElapsedCount">Optional: Max fires before killing. 0 = infinite.</param>
+      <returns>The created TimedEvent instance.</returns>
+    </member>
+    <member name="M:RustBuster2016.API.Util.GetTimer(System.String)">
+      <summary>
+            Gets the timer.
+            </summary>
+      <param name="name"></param>
+      <returns></returns>
+    </member>
+    <member name="M:RustBuster2016.API.Util.KillTimer(System.String)">
+      <summary>
+            Kills the timer.
+            </summary>
+      <param name="name">Name.</param>
+    </member>
+    <member name="M:RustBuster2016.API.Util.GetParallelTimer(System.String)">
+      <summary>
+            Gets the parallel timer.
+            </summary>
+      <returns>The parallel timer.</returns>
+      <param name="name">Name.</param>
+    </member>
+    <member name="M:RustBuster2016.API.Util.KillParallelTimer(System.String)">
+      <summary>
+            Kills the parallel timer.
+            </summary>
+      <param name="name">Name.</param>
+    </member>
+    <member name="M:RustBuster2016.API.Util.CreateSystemTimer(System.String,System.Int32,System.Action{RustBuster2016.API.Events.SystemTimerEvent},System.Boolean,System.String,System.Int32)">
+      <summary>
+            Creates a System.Timers.Timer with a callback, avoiding UnityEngine constraints.
+            Use this when you need a timer under a new Thread.
+            </summary>
+      <param name="name">Name of the timer.</param>
+      <param name="timeoutDelay">Interval in milliseconds.</param>
+      <param name="callback">The callback function to execute when timer fires.</param>
+      <param name="autoReset">True if the timer should repeat, false for single execution.</param>
+      <param name="pluginName">The name of the plugin creating the event.</param>
+      <param name="maxElapsedCount">Optional: Max fires before killing. 0 = infinite.</param>
+      <returns>The created SystemTimerEvent instance.</returns>
+    </member>
+    <member name="M:RustBuster2016.API.Util.CreateParallelSystemTimer(System.String,System.Int32,System.Collections.Generic.Dictionary{System.String,System.Object},System.Action{RustBuster2016.API.Events.SystemTimerEvent},System.Boolean,System.String,System.Int32)">
+      <summary>
+            Creates a parallel System.Timers.Timer with arguments and a callback. Multiple timers with the same name can exist.
+            Use this when you need a timer under a new Thread.
+            </summary>
+      <param name="name">Name of the timer.</param>
+      <param name="timeoutDelay">Interval in milliseconds.</param>
+      <param name="args">Dictionary of custom arguments to pass to the timer.</param>
+      <param name="callback">The callback function to execute when timer fires.</param>
+      <param name="autoReset">True if the timer should repeat, false for single execution.</param>
+      <param name="pluginName">The name of the plugin creating the event.</param>
+      <param name="maxElapsedCount">Optional: Max fires before killing. 0 = infinite.</param>
+      <returns>The created SystemTimerEvent instance.</returns>
+    </member>
+    <member name="M:RustBuster2016.API.Util.GetSystemTimer(System.String)">
+      <summary>
+            Gets the System Timer.
+            </summary>
+      <param name="name"></param>
+      <returns></returns>
+    </member>
+    <member name="M:RustBuster2016.API.Util.KillSystemTimer(System.String)">
+      <summary>
+            Kills the System Timer.
+            </summary>
+      <param name="name">Name.</param>
+    </member>
+    <member name="M:RustBuster2016.API.Util.GetParallelSystemTimer(System.String)">
+      <summary>
+            Gets the parallel System Timer.
+            </summary>
+      <returns>The parallel System Timer list.</returns>
+      <param name="name">Name.</param>
+    </member>
+    <member name="M:RustBuster2016.API.Util.KillParallelSystemTimer(System.String)">
+      <summary>
+            Kills the parallel System Timer.
+            </summary>
+      <param name="name">Name.</param>
+    </member>
+    <member name="M:RustBuster2016.API.Util.KillTimers">
+      <summary>
+            Kills the timers.
+            </summary>
+    </member>
+    <member name="M:RustBuster2016.API.Util.GetGround(System.Single,System.Single)">
+      <summary>
+            Gets the ground Y position at the given X, Z coordinates.
+            </summary>
+      <param name="x"></param>
+      <param name="z"></param>
+      <returns></returns>
+    </member>
+    <member name="M:RustBuster2016.API.Util.GetGround(UnityEngine.Vector3)">
+      <summary>
+            Gets the ground Y position at the given Vector.
+            </summary>
+      <param name="target"></param>
+      <returns></returns>
+    </member>
+    <member name="M:RustBuster2016.API.Util.GetTerrainHeight(UnityEngine.Vector3)">
+      <summary>
+            Gets the TerrainHight at the given Vector.
+            </summary>
+      <param name="target"></param>
+      <returns></returns>
+    </member>
+    <member name="M:RustBuster2016.API.Util.GetTerrainHeight(System.Single,System.Single,System.Single)">
+      <summary>
+            Gets the TerrainHight at the given coordinates.
+            </summary>
+      <param name="x"></param>
+      <param name="y"></param>
+      <param name="z"></param>
+      <returns></returns>
+    </member>
+    <member name="M:RustBuster2016.API.Util.GetTerrainSteepness(UnityEngine.Vector3)">
+      <summary>
+            Gets the terrain steepness at the target vector.
+            </summary>
+      <param name="target"></param>
+      <returns></returns>
+    </member>
+    <member name="M:RustBuster2016.API.Util.GetTerrainSteepness(System.Single,System.Single)">
+      <summary>
+            Gets the terrain steepness at the given X, Z coordinates.
+            </summary>
+      <param name="x"></param>
+      <param name="z"></param>
+      <returns></returns>
+    </member>
+    <member name="M:RustBuster2016.API.Util.GetGroundDist(System.Single,System.Single,System.Single)">
+      <summary>
+            Returns the Ground Distance from the specified coordinates.
+            </summary>
+      <param name="x"></param>
+      <param name="y"></param>
+      <param name="z"></param>
+      <returns></returns>
+    </member>
+    <member name="M:RustBuster2016.API.Util.GetGroundDist(UnityEngine.Vector3)">
+      <summary>
+            Returns the Ground Distance from the specified Vector.
+            </summary>
+      <param name="target"></param>
+      <returns></returns>
+    </member>
+    <member name="P:RustBuster2016.API.Util.Time">
+      <summary>
+            Gets or Sets the current time.
+            </summary>
+    </member>
+    <member name="M:RustBuster2016.API.Util.GetAllTreeInstances">
+      <summary>
+            Retrieves all tree instances present in the active terrain of the game.
+            Do not use this under a Thread.
+            </summary>
+      <returns>A list of tree instances from the active terrain.</returns>
+    </member>
+    <member name="P:RustBuster2016.API.Util.MainThreadID">
+      <summary>
+            Returns the main thread ID.
+            </summary>
+    </member>
+    <member name="P:RustBuster2016.API.Util.MainThread">
+      <summary>
+            Returns the main thread.
+            </summary>
+    </member>
+    <member name="P:RustBuster2016.API.Util.CurrentWorkingThread">
+      <summary>
+            Returns the current working thread.
+            </summary>
+    </member>
+    <member name="P:RustBuster2016.API.Util.CurrentWorkingThreadID">
+      <summary>
+            Returns the current working thread ID.
+            </summary>
+    </member>
+    <member name="T:RustBuster2016.API.Web">
+      <summary>
+            This class helps plugins to use simple web requests.
+            Some Certifications are not supported in Mono when using TLS requests.
+            </summary>
+    </member>
+    <member name="M:RustBuster2016.API.Web.GetInstance">
+      <summary>
+            Returns the instance of the Web class.
+            </summary>
+      <returns></returns>
+    </member>
+    <member name="M:RustBuster2016.API.Web.GET(System.String)">
+      <summary>
+            Performs a synchronous HTTP GET request to the specified URL.
+            WARNING: This method blocks the calling thread until the request completes. 
+            Calling from Unity's main thread will freeze the game server.
+            Use CreateAsyncHTTPRequest instead to avoid blocking the main thread.
+            </summary>
+      <param name="url">Full URL to request (https://example.com/api). HTTPS uses WinHTTP, HTTP uses WebClient.</param>
+      <returns>Response body as a string, or error message on failure.</returns>
+    </member>
+    <member name="M:RustBuster2016.API.Web.POST(System.String,System.String,System.String)">
+      <summary>
+            Performs a synchronous HTTP POST request to the specified URL with data.
+            WARNING: This method blocks the calling thread until the request completes.
+            Calling from Unity's main thread will freeze the game server until completion.
+            Use CreateAsyncHTTPRequest instead to avoid blocking the main thread.
+            </summary>
+      <param name="url">Full URL to request (https://example.com/api). HTTPS uses WinHTTP, HTTP uses WebClient.</param>
+      <param name="data">Request body payload to send.</param>
+      <param name="contentType">Content-Type header value. For JSON format specify 'application/json'. Defaults to 'application/x-www-form-urlencoded'.</param>
+      <returns>Response body as a string, or error message on failure.</returns>
+    </member>
+    <member name="M:RustBuster2016.API.Web.GETWithSSL(System.String)">
+      <summary>
+            Performs a synchronous HTTP GET request to the specified URL.
+            WARNING: This method blocks the calling thread until the request completes. 
+            Calling from Unity's main thread will freeze the game server.
+            Use CreateAsyncHTTPRequest instead to avoid blocking the main thread.
+            </summary>
+      <param name="url">Full URL to request (https://example.com/api). HTTPS uses WinHTTP, HTTP uses WebClient.</param>
+      <returns>Response body as a string, or error message on failure.</returns>
+    </member>
+    <member name="M:RustBuster2016.API.Web.POSTWithSSL(System.String,System.String)">
+      <summary>
+            Performs a synchronous HTTP POST request to the specified URL with data.
+            WARNING: This method blocks the calling thread until the request completes.
+            Calling from Unity's main thread will freeze the game server until completion.
+            Use CreateAsyncHTTPRequest instead to avoid blocking the main thread.
+            </summary>
+      <param name="url">Full URL to request (https://example.com/api). HTTPS uses WinHTTP, HTTP uses WebClient.</param>
+      <param name="data">Request body payload to send.</param>
+      <returns>Response body as a string, or error message on failure.</returns>
+    </member>
+    <member name="M:RustBuster2016.API.Web.CreateAsyncHTTPRequest(System.String,System.Action{System.Int32,System.String},System.String,System.String,System.Collections.Generic.Dictionary{System.String,System.String},System.String,System.Single,System.Boolean)">
+      <summary>
+             Creates an Async request for the specified URL, and headers.
+             The result will be passed to the specified callback's parameter.
+             This is the recommended way to do requests.
+             Python example:
+             clr.AddReferenceByPartialName('System.Core')
+             import System
+             import json
+             from System import Action
+             Web.CreateAsyncHTTPRequest('url', Action[int, str](self.webCallback), 'POST', json.dumps({'name':'test'}), None, 'application/json')
+            
+             Example2:
+             MyExtraArguments = Plugin.CreateStringDict()
+             MyExtraArguments["X-Custom-Header"] = "test"
+             Web.CreateAsyncHTTPRequest('https://www.postb.in/1766312967243-4069704979192', Action[int, str](self.webCallback), 'POST','hello=world', MyExtraArguments,'application/x-www-form-urlencoded')
+            
+             Example3:
+             Web.CreateAsyncHTTPRequest('https://www.postb.in/1766312967243-4069704979192?hello=world', Action[int, str](self.webCallback), 'GET')
+             
+             WARNING: This is an async call. The callback will be on a subthread. If you have something that you need to run
+             on the main thread (UnityEngine related like FindObjectsOfAllType), because It's thread sensitive then call Loom's QueueOnMainThread function in the
+             provided callback function.
+             Otherwise you may crash the server.
+             </summary>
+      <param name="url">Full URL to request (https://example.com/api). HTTPS URLs use WinHTTP, HTTP URLs use HttpWebRequest.</param>
+      <param name="callback">Action invoked as callback(statusCode, responseBody) when request completes. Executes on a background thread.</param>
+      <param name="method">HTTP method to use (GET, POST, PUT, DELETE, etc.). Defaults to GET.</param>
+      <param name="inputBody">Optional request body payload. Pass null or empty string for GET requests. For JSON, use json.dumps() or JsonConvert.</param>
+      <param name="additionalHeaders">Optional dictionary of custom HTTP headers to include in the request ({"Authorization": "Bearer token"}).</param>
+      <param name="contentType">Content-Type header value. Use 'application/json' for JSON payloads. Defaults to 'application/x-www-form-urlencoded'.</param>
+      <param name="timeout">Request timeout in seconds. Use 0 for default timeout.</param>
+      <param name="allowDecompression">Enable automatic GZip/Deflate decompression for HTTP requests. Not applicable to HTTPS (WinHTTP) requests.</param>
+    </member>
+    <member name="M:RustBuster2016.API.Web.DoWithResponse(System.Net.HttpWebRequest,System.Action{System.Net.HttpWebResponse})">
+      <summary>
+            This handles the Async webrequests of the CreateAsyncHTTPRequest method.
+            You can use this if you are creating your own HttpWebRequest instance.
+            </summary>
+      <param name="request"></param>
+      <param name="responseAction"></param>
+    </member>
+    <member name="T:RustBuster2016.API.WinHttpClient">
+      <summary>
+            Since UnityEngine is running on Mono and updating the security dlls would take a lot of work
+            we use WinHTTP via P/Invoke to make HTTP requests with modern TLS support so websites do not reject us
+            with TLS 1.3 enforcement.
+            It should work with Wine under Linux as well.
+            </summary>
+    </member>
+    <member name="F:RustBuster2016.API.WinHttpClient.BUFFER_SIZE">
+      <summary>
+            The buffer size for reading response data per chunk (4 KB).
+            </summary>
+    </member>
+    <member name="F:RustBuster2016.API.WinHttpClient.MAX_SIZE">
+      <summary>
+            The maximum size of the response body to read (10 MB).
+            </summary>
+    </member>
+    <member name="M:RustBuster2016.API.WinHttpClient.GetInstance">
+      <summary>
+            Returns the instance of the Web class.
+            </summary>
+      <returns></returns>
+    </member>
+    <member name="M:RustBuster2016.API.WinHttpClient.InitSession">
+      <summary>
+            Initializes the WinHTTP session.
+            No need to call this from a plugin.
+            </summary>
+    </member>
+    <member name="M:RustBuster2016.API.WinHttpClient.CloseSession">
+      <summary>
+            Closes the WinHTTP session.
+            No need to call this from a plugin.
+            </summary>
+    </member>
+    <member name="M:RustBuster2016.API.WinHttpClient.MakeRequest(System.String,System.Action{System.Int32,System.String},System.String,System.String,System.Collections.Generic.Dictionary{System.String,System.String},System.String,System.Single)">
+      <summary>
+            Queues an HTTP request to be executed asynchronously on a ThreadPool thread using WinHTTP.
+            Non-blocking for the caller, the result is returned via the callback when the request completes.
+            </summary>
+      <param name="url">Full URL including protocol (https://example.com/api).</param>
+      <param name="callback">
+            Delegate invoked as callback(statusCode, responseBody) after the request finishes.
+            This runs on a ThreadPool thread, use Loom.QueueOnMainThread if you need to touch Unity objects in your callback.
+            </param>
+      <param name="method">HTTP method to use (GET, POST, PUT, DELETE). Defaults to GET.</param>
+      <param name="inputBody">Optional request body payload. Use null or empty for methods like GET.</param>
+      <param name="additionalHeaders">
+            Optional collection of extra HTTP headers to send with the request.
+            </param>
+      <param name="contentType">
+            Content-Type header for the request body (application/json, application/x-www-form-urlencoded).
+            Defaults to application/x-www-form-urlencoded.
+            </param>
+      <param name="timeout">
+            Timeout in seconds applied to connect, send, and receive operations. Use 0 for the default.
+            </param>
+    </member>
+    <member name="M:RustBuster2016.API.WinHttpClient.DoWinHttpRequest(System.String,System.Action{System.Int32,System.String},System.String,System.String,System.Collections.Generic.Dictionary{System.String,System.String},System.String,System.Single)">
+      <summary>
+            Executes a synchronous HTTP request using WinHTTP. Blocks the calling thread until completion.
+            Should only be called from background threads (automatically handled by MakeRequest).
+            </summary>
+      <param name="url">Full URL including protocol (https://example.com/api)</param>
+      <param name="callback">Action invoked with (statusCode, responseBody) on the same thread after request completes</param>
+      <param name="method">HTTP method: GET, POST, PUT, DELETE</param>
+      <param name="inputBody">Request body data. Use null for GET requests.</param>
+      <param name="additionalHeaders">Custom HTTP headers</param>
+      <param name="contentType">Content-Type header value</param>
+      <param name="timeout">Timeout in seconds. Use 0 for default.</param>
+      <remarks>
+            Blocks thread during WinHttpConnect, WinHttpSendRequest, WinHttpReceiveResponse, WinHttpReadData.
+            SSL validation disabled. Response limited to 10MB, you can change class variable.
+            </remarks>
+    </member>
+    <member name="M:RustBuster2016.API.WinHttpClient.GetBlocking(System.String,System.Single)">
+      <summary>
+            Performs a synchronous HTTP GET request that blocks the calling thread until completion or timeout.
+            WARNING: Calling this from Unity's main thread may freeze game for x time.
+            Use MakeRequest with callbacks for non-blocking behavior, or call this from a background thread.
+            </summary>
+      <param name="url">Full URL to request (https://example.com/api).</param>
+      <param name="timeout">
+            Request timeout in seconds. Defaults to 5 seconds.
+            Actual wait time is timeout + 1 second to allow for cleanup.
+            </param>
+      <returns>
+            Response body string if status code is 2xx (success).
+            "HTTP {statusCode}" string if request succeeded but returned non-2xx status.
+            "Timeout" if request exceeded timeout duration.
+            "Error {exception}" if request failed with an exception.
+            </returns>
+    </member>
+    <member name="M:RustBuster2016.API.WinHttpClient.PostBlocking(System.String,System.String,System.String,System.Single)">
+      <summary>
+            Performs a synchronous HTTP POST request that blocks the calling thread until completion or timeout.
+            WARNING: Calling this from Unity's main thread may freeze game for x time.
+            Use MakeRequest with callbacks for non-blocking behavior, or call this from a background thread.
+            </summary>
+      <param name="url">Full URL to request (e.g., https://example.com/api).</param>
+      <param name="inputBody">Request body payload to send. Use null or empty for no body.</param>
+      <param name="contentType">
+            Content-Type header value. Use 'application/json' for JSON payloads.
+            Defaults to 'application/x-www-form-urlencoded'.
+            </param>
+      <param name="timeout">
+            Request timeout in seconds. Defaults to 5 seconds.
+            Actual wait time is timeout + 1 second to allow for cleanup.
+            </param>
+      <returns>
+            Response body string if status code is 2xx (success).
+            "HTTP {statusCode}" string if request succeeded but returned non-2xx status.
+            "Timeout" if request exceeded timeout duration.
+            "Error {exception}" if request failed with an exception.
+            </returns>
+    </member>
+    <member name="M:RustBuster2016.API.WinHttpClient.DownloadFileBlocking(System.String,System.String,System.Single)">
+      <summary>
+            Backwards compatible wrapper for DownloadFileBlocking that doesn't expose the error string.
+            </summary>
+    </member>
+    <member name="M:RustBuster2016.API.WinHttpClient.DownloadFileBlocking(System.String,System.String,System.String@,System.Single)">
+      <summary>
+            Performs a synchronous HTTP GET request directly downloading the binary content into a file.
+            Blocks the calling thread until completion or timeout.
+            </summary>
+      <param name="url">The URL of the file to download.</param>
+      <param name="destinationPath">The local file path where the downloaded content will be saved.</param>
+      <param name="error">Outputs the error message if the operation fails.</param>
+      <param name="timeout">The maximum time in seconds to wait for the operation to complete. Defaults to 30 seconds.</param>
+      <returns>True if the file is successfully downloaded, otherwise, false.</returns>
+    </member>
+    <member name="M:RustBuster2016.API.WinHttpClient.DownloadFileAsync(System.String,System.String,System.Action{System.Boolean,System.String},System.Single)">
+      <summary>
+            Performs an asynchronous HTTP GET request to download binary content.
+            Returns the success status and error message via a callback on the main thread.
+            </summary>
+    </member>
+    <member name="M:RustBuster2016.API.WinHttpClient.UploadFileBlocking(System.String,System.String,System.Single)">
+      <summary>
+            Backwards compatible wrapper for UploadFileBlocking that doesn't expose the error string.
+            </summary>
+    </member>
+    <member name="M:RustBuster2016.API.WinHttpClient.UploadFileBlocking(System.String,System.String,System.String@,System.Single)">
+      <summary>
+            Performs a synchronous HTTP POST request directly uploading the binary content of a file.
+            Blocks the calling thread until completion or timeout. Outputs the error message on failure.
+            </summary>
+    </member>
+    <member name="M:RustBuster2016.API.WinHttpClient.UploadFileAsync(System.String,System.String,System.Action{System.Boolean,System.String},System.Single)">
+      <summary>
+            Performs an asynchronous HTTP POST request directly uploading the binary content of a file.
+            Returns the success status and error message via a callback on the main thread.
+            </summary>
+    </member>
+    <member name="T:RustBuster2016.API.Zone3D">
+      <summary>
+            Represents a 3D volumetric area defined by a 2D polygon base and a vertical height range.
+            Includes optimizations such as Axis-Aligned Bounding Box (AABB) pre-checking.
+            </summary>
+    </member>
+    <member name="P:RustBuster2016.API.Zone3D.MinY">
+      <summary>
+            Gets or sets the minimum elevation (altitude) of the zone.
+            </summary>
+    </member>
+    <member name="P:RustBuster2016.API.Zone3D.MaxY">
+      <summary>
+            Gets or sets the maximum elevation (altitude) of the zone.
+            </summary>
+    </member>
+    <member name="M:RustBuster2016.API.Zone3D.Contains(UnityEngine.Vector3)">
+      <summary>
+            Determines whether a 3D position is within the zone boundaries.
+            </summary>
+      <remarks>
+            This method performs checks in three stages:
+            1. Vertical Height (Y-axis) check.
+            2. AABB (Bounding Box) check for rapid discarding.
+            3. Ray-casting (Point-in-Polygon) algorithm for precise 2D boundaries.
+            </remarks>
+      <param name="v">The Vector3 position to check.</param>
+      <returns>True if the position is inside the zone.</returns>
+    </member>
+    <member name="M:RustBuster2016.API.Zone3D.Mark(UnityEngine.Vector2)">
+      <summary>
+            Adds a corner point to the zone polygon using a <see cref="T:UnityEngine.Vector2" />.
+            </summary>
+      <param name="v">The 2D coordinates (X, Z).</param>
+    </member>
+    <member name="M:RustBuster2016.API.Zone3D.Mark(System.Single,System.Single)">
+      <summary>
+            Adds a corner point to the zone polygon using raw coordinates.
+            </summary>
+      <param name="x">The X coordinate.</param>
+      <param name="y">The Z coordinate (maps to Vector2.y).</param>
+    </member>
+    <member name="P:RustBuster2016.API.Zone3D.Points">
+      <summary>
+            Gets or sets the list of vertices (2D points) that form the zone floor.
+            </summary>
+    </member>
+    <member name="P:RustBuster2016.API.Zone3D.Protected">
+      <summary>
+            Gets or sets a value indicating whether the zone is protected from damage or building.
+            Handle this in your own HurtEvent hook.
+            </summary>
+    </member>
+    <member name="P:RustBuster2016.API.Zone3D.PVP">
+      <summary>
+            Gets or sets a value indicating whether PvP (Player vs Player) is allowed in this zone.
+            Handle this in your own HurtEvent hook.
+            </summary>
+    </member>
+    <member name="M:RustBuster2016.API.Zone3D.GetZones">
+      <summary>
+            Retrieves all registered 3D zones in the form of a thread-safe dictionary.
+            </summary>
+    </member>
+    <member name="M:RustBuster2016.API.Zone3D.Remove(System.String)">
+      <summary>
+            Removes a zone from the global registration.
+            </summary>
+      <param name="name">The unique name of the zone to remove.</param>
+      <returns>True if the zone was successfully found and removed.</returns>
+    </member>
+    <member name="M:RustBuster2016.API.Zone3D.Exists(System.String)">
+      <summary>
+            Checks if a zone with the specified name exists.
+            </summary>
+    </member>
+    <member name="M:RustBuster2016.API.Zone3D.Get(System.String)">
+      <summary>
+            Retrieves a zone by its unique name.
+            </summary>
+    </member>
+    <member name="M:RustBuster2016.API.Zone3D.Clear">
+      <summary>
+            Clears all registered zones.
+            </summary>
+    </member>
+    <member name="M:RustBuster2016.API.Zone3D.GetZonesAt(UnityEngine.Vector3)">
+      <summary>
+            Finds all zones that contain the specified 3D position.
+            Useful for overlapping protection layers.
+            </summary>
+    </member>
+    <member name="M:RustBuster2016.API.Zone3D.GetFirstZoneAt(UnityEngine.Vector3)">
+      <summary>
+            Returns the first zone that contains the specified position.
+            Optimized for high-frequency checks where only the first match matters.
+            </summary>
+    </member>
+    <member name="F:RustBuster2016.Loom.MaxThreads">
+      <summary>
+            Maximum amount of threads that can be queued at a time. Do not set this to a large number or rust will die.
+            </summary>
+    </member>
+    <member name="P:RustBuster2016.Loom.AmountOfThreads">
+      <summary>
+            Returns the current amount of queued threads.
+            </summary>
+    </member>
+    <member name="P:RustBuster2016.Loom.Current">
+      <summary>
+            Returns the instance of the Loom Class.
+            </summary>
+    </member>
+    <member name="M:RustBuster2016.Loom.QueueOnMainThread(System.Action)">
+      <summary>
+            Runs the code on the MAIN thread.
+            </summary>
+      <param name="action"></param>
+    </member>
+    <member name="M:RustBuster2016.Loom.QueueOnMainThread(System.Action,System.Single)">
+      <summary>
+            Runs the code on the MAIN thread.
+            </summary>
+      <param name="action"></param>
+      <param name="time"></param>
+    </member>
+    <member name="M:RustBuster2016.Loom.ExecuteInBiggerStackThread(System.Action)">
+      <summary>
+            Runs the code on a sub thread.
+            </summary>
+      <param name="action"></param>
+    </member>
+  </members>
+</doc>

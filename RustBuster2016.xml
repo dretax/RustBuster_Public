@@ -1052,8 +1052,19 @@
     </member>
     <member name="P:RustBuster2016.API.Events.ResearchEvent.Item">
       <summary>
-            Returns the research tool item being used.
-            </summary>
+             Returns the research tool item being used.
+            
+             Typed as InventoryItem rather than ResearchToolItem&lt;ToolDataBlock&gt; on purpose.
+             ResearchToolItem&lt;T&gt; is constrained to T : ToolDataBlock and is only ever created
+             with a concrete ToolDataBlock subclass, so ResearchToolItem&lt;ToolDataBlock&gt; is a
+             type no live object can ever have. Generics are not covariant, so a cast to it
+             always throws InvalidCastException. InventoryItem is the nearest base every
+             instantiation genuinely shares.
+            
+             Cast it yourself if you need the tool specifics, for example:
+               ResearchToolItem&lt;ResearchToolDataBlock&gt; tool =
+                   e.Item as ResearchToolItem&lt;ResearchToolDataBlock&gt;;
+             </summary>
     </member>
     <member name="P:RustBuster2016.API.Events.ResearchEvent.Inventory">
       <summary>
@@ -1654,7 +1665,11 @@
             </summary>
     </member>
     <member name="F:RustBuster2016.API.AttachFlags.SuppressFallDamage">
-      <summary>Zeroes CCMotor.velocity on attach and again on detach.</summary>
+      <summary>
+            Zeroes CCMotor.velocity on detach, and starts the IsInFallGrace window. Nothing
+            is zeroed on attach, on purpose: the velocity setter clears the motor grounded
+            flag, which HumanController keeps reading all ride.
+            </summary>
     </member>
     <member name="F:RustBuster2016.API.AttachFlags.PlaceOnDetach">
       <summary>
@@ -1873,10 +1888,14 @@
     </member>
     <member name="M:RustBuster2016.API.LocalAttachment.GetMotorColliders(Character)">
       <summary>
-            Returns the colliders that make up the local player capsule. Character.CreateCCMotor
-            instantiates the CCTotemPole as its own root object, so these are NOT children of
-            the Character transform.
-            </summary>
+             Returns the CharacterControllers that make up the local player capsule.
+            
+             TotemPole.InstantiateCCDesc creates each CCDesc with Object.Instantiate and no
+             parent, so they are ROOT GameObjects, not children of the CCTotemPole. Searching
+             the pole's children finds nothing, and searching the Character finds its hitboxes,
+             which is the wrong set entirely. The capsule is the pole's own CCDesc plus one per
+             TotemicFigure.
+             </summary>
     </member>
     <member name="M:RustBuster2016.API.LocalAttachment.TryFindDismountPoint(Character,UnityEngine.Transform,UnityEngine.Vector3@)">
       <summary>

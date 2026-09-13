@@ -2365,13 +2365,30 @@
     </member>
     <member name="P:RustBuster2016.API.Util.MainThreadID">
       <summary>
-            Returns the main thread ID.
+            Returns the main thread ID, or 0 when it has not been captured yet.
+            Compare with IsMainThread rather than testing this directly: an uncaptured 0
+            never equals a real thread ID, so a raw comparison silently reports "not main"
+            for every thread including the real one.
             </summary>
     </member>
     <member name="P:RustBuster2016.API.Util.MainThread">
       <summary>
-            Returns the main thread.
+            Returns the main thread, or null when it has not been captured yet.
             </summary>
+    </member>
+    <member name="P:RustBuster2016.API.Util.MainThreadKnown">
+      <summary>
+            True once CaptureMainThread has run.
+            </summary>
+    </member>
+    <member name="P:RustBuster2016.API.Util.IsMainThread">
+      <summary>
+             True only when the caller is provably on the main thread.
+            
+             Returns FALSE while the main thread is unknown, on purpose. Callers then take
+             the marshalling path, which is harmless, instead of the inline path, which would
+             run Unity calls on a background thread.
+             </summary>
     </member>
     <member name="P:RustBuster2016.API.Util.CurrentWorkingThread">
       <summary>

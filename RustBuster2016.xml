@@ -608,6 +608,18 @@
             This returns the explosion's object, but only "AfterExplosion". Otherwise null.
             </summary>
     </member>
+    <member name="T:RustBuster2016.API.Events.GuiReadyEvent">
+      <summary>
+            Event fired when the RPOS (Rust Player Operating System / HUD) has awoken and is ready.
+            This event is raised inside <c>RPOSAwake</c>, giving plugins a chance to react
+            as soon as the in-game GUI becomes available.
+            </summary>
+    </member>
+    <member name="P:RustBuster2016.API.Events.GuiReadyEvent.RPOS">
+      <summary>
+            Returns the RPOS (HUD) instance that triggered this event.
+            </summary>
+    </member>
     <member name="T:RustBuster2016.API.Events.InventoryToggleEvent">
       <summary>
             Event fired when the player's inventory (RPOS) is about to be toggled on or off.
@@ -985,6 +997,23 @@
       <summary>
             Gets or Sets the ReturnMessage that will be sent back to the client as a response.
             ~ and @ characters are not allowed.
+            </summary>
+    </member>
+    <member name="T:RustBuster2016.API.Events.PlayerRespawnEvent">
+      <summary>
+            Event fired when a player spawns / respawns in the world.
+            This event is raised at the end of the respawn setup, after all controller
+            components and overlays have been initialized.
+            </summary>
+    </member>
+    <member name="P:RustBuster2016.API.Events.PlayerRespawnEvent.HumanController">
+      <summary>
+            Returns the HumanController component of the player that has respawned.
+            </summary>
+    </member>
+    <member name="P:RustBuster2016.API.Events.PlayerRespawnEvent.NetworkMessageInfo">
+      <summary>
+            Returns the network message info (sender, timestamp, network view) for the respawn RPC.
             </summary>
     </member>
     <member name="T:RustBuster2016.API.Events.PluginMessageResponse">
@@ -1439,6 +1468,16 @@
     <member name="E:RustBuster2016.API.Hooks.OnRustBusterClientDeathScreenDisAppear">
       <summary>
             Runs when the death screen disappears.
+            </summary>
+    </member>
+    <member name="E:RustBuster2016.API.Hooks.OnRustBusterPlayerRespawn">
+      <summary>
+            Runs when a player respawns in the world, after all respawn setup has completed.
+            </summary>
+    </member>
+    <member name="E:RustBuster2016.API.Hooks.OnRustBusterGuiReady">
+      <summary>
+            Runs when the RPOS (HUD/GUI) has awoken and is ready to use.
             </summary>
     </member>
     <member name="E:RustBuster2016.API.Hooks.OnRustBusterLootWindowOpen">

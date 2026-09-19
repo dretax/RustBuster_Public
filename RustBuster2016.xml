@@ -1016,6 +1016,44 @@
             Returns the network message info (sender, timestamp, network view) for the respawn RPC.
             </summary>
     </member>
+    <member name="T:RustBuster2016.API.Events.OutOfAirEvent">
+      <summary>
+             Event fired once when the local player's air reaches zero, and not again until it
+             has refilled above zero.
+            
+             The client cannot apply damage, the server owns health, so this is a notification:
+             subscribe and send your own drown message to the server half of your plugin.
+             </summary>
+    </member>
+    <member name="P:RustBuster2016.API.Events.OutOfAirEvent.SubmergedSeconds">
+      <summary>
+            Returns how long the player had been continuously submerged when the air ran out.
+            </summary>
+    </member>
+    <member name="T:RustBuster2016.API.Events.OxygenChangedEvent">
+      <summary>
+             Event fired as the local player's air changes while swimming.
+            
+             Throttled by WaterSystem.OxygenEventStep rather than fired every frame, so a plugin
+             driving a UI bar gets a manageable number of updates.
+             </summary>
+    </member>
+    <member name="P:RustBuster2016.API.Events.OxygenChangedEvent.Oxygen01">
+      <summary>
+            Returns the remaining air from 0 to 1. Use this for a bar or a percentage.
+            </summary>
+    </member>
+    <member name="P:RustBuster2016.API.Events.OxygenChangedEvent.SecondsRemaining">
+      <summary>
+            Returns roughly how many seconds of air are left at the current drain rate.
+            </summary>
+    </member>
+    <member name="P:RustBuster2016.API.Events.OxygenChangedEvent.WaterState">
+      <summary>
+            Returns the water state at the moment the air was sampled. Air only drains while
+            this is Submerged.
+            </summary>
+    </member>
     <member name="T:RustBuster2016.API.Events.PluginMessageResponse">
       <summary>
             Result states for Inter-Plugin Communication attempts.
@@ -1304,6 +1342,32 @@
             Tells whether the timer has been killed/disposed.
             </summary>
     </member>
+    <member name="T:RustBuster2016.API.Events.WaterStateChangedEvent">
+      <summary>
+            Event fired when the local player moves between dry land, the water surface and
+            being fully submerged.
+            </summary>
+    </member>
+    <member name="P:RustBuster2016.API.Events.WaterStateChangedEvent.Previous">
+      <summary>
+            Returns the state the player was in before this change.
+            </summary>
+    </member>
+    <member name="P:RustBuster2016.API.Events.WaterStateChangedEvent.Current">
+      <summary>
+            Returns the state the player is in now.
+            </summary>
+    </member>
+    <member name="P:RustBuster2016.API.Events.WaterStateChangedEvent.Entered">
+      <summary>
+            Returns true when the player just entered the water from dry land.
+            </summary>
+    </member>
+    <member name="P:RustBuster2016.API.Events.WaterStateChangedEvent.Exited">
+      <summary>
+            Returns true when the player just left the water entirely.
+            </summary>
+    </member>
     <member name="T:RustBuster2016.API.Events.WebSocketEvent">
       <summary>
             Represents an event triggered during a WebSocket interaction in the context of a plugin.
@@ -1349,6 +1413,190 @@
             </summary>
       <param name="value">Input.</param>
       <returns></returns>
+    </member>
+    <member name="T:RustBuster2016.API.FogRequest">
+      <summary>
+            A fog request. Every field is optional: a layer only overrides what it actually sets,
+            so a plugin that just wants a different colour leaves the distances alone and inherits
+            whatever is underneath it.
+            </summary>
+    </member>
+    <member name="P:RustBuster2016.API.FogRequest.Owner">
+      <summary>
+            Your plugin name. Used for logging and for dropping the layer automatically when
+            the plugin unloads.
+            </summary>
+    </member>
+    <member name="P:RustBuster2016.API.FogRequest.Priority">
+      <summary>
+            Higher wins. Use the FogPriority constants rather than raw numbers so layers from
+            different plugins stack predictably.
+            </summary>
+    </member>
+    <member name="P:RustBuster2016.API.FogRequest.Enabled">
+      <summary>Turn fog on or off. Null leaves it as it is.</summary>
+    </member>
+    <member name="P:RustBuster2016.API.FogRequest.Mode">
+      <summary>Linear or exponential. Null leaves it as it is.</summary>
+    </member>
+    <member name="P:RustBuster2016.API.FogRequest.Color">
+      <summary>
+            Fog colour. Setting this also suppresses Time of Day's own colour writes for as
+            long as the layer is active, otherwise TOD_Sky would overwrite it every frame.
+            </summary>
+    </member>
+    <member name="P:RustBuster2016.API.FogRequest.StartDistance">
+      <summary>Linear fog start distance in metres.</summary>
+    </member>
+    <member name="P:RustBuster2016.API.FogRequest.EndDistance">
+      <summary>Linear fog end distance in metres.</summary>
+    </member>
+    <member name="P:RustBuster2016.API.FogRequest.Density">
+      <summary>Exponential fog density.</summary>
+    </member>
+    <member name="P:RustBuster2016.API.FogRequest.UserData">
+      <summary>Anything you want handed back to you on the handle.</summary>
+    </member>
+    <member name="T:RustBuster2016.API.FogPriority">
+      <summary>
+            Suggested priorities. Any int works, these just keep unrelated plugins from fighting.
+            </summary>
+    </member>
+    <member name="F:RustBuster2016.API.FogPriority.Plugin">
+      <summary>Ambient or decorative fog. The default.</summary>
+    </member>
+    <member name="F:RustBuster2016.API.FogPriority.Weather">
+      <summary>Weather driven fog, which should beat decorative fog.</summary>
+    </member>
+    <member name="F:RustBuster2016.API.FogPriority.Event">
+      <summary>An event or cutscene that should beat weather.</summary>
+    </member>
+    <member name="F:RustBuster2016.API.FogPriority.Underwater">
+      <summary>Reserved for the underwater override. Beats everything.</summary>
+    </member>
+    <member name="T:RustBuster2016.API.FogHandle">
+      <summary>
+            Live handle to a fog layer. Change the fields and the composed result updates on the
+            next frame, no need to release and push again.
+            </summary>
+    </member>
+    <member name="P:RustBuster2016.API.FogHandle.Owner">
+      <summary>The plugin that owns this layer.</summary>
+    </member>
+    <member name="P:RustBuster2016.API.FogHandle.UserData">
+      <summary>Whatever you put in FogRequest.UserData.</summary>
+    </member>
+    <member name="P:RustBuster2016.API.FogHandle.IsValid">
+      <summary>False once the layer has been released. A stale handle is inert.</summary>
+    </member>
+    <member name="F:RustBuster2016.API.FogHandle.Priority">
+      <summary>Higher wins. Changing it re-sorts the stack on the next frame.</summary>
+    </member>
+    <member name="F:RustBuster2016.API.FogHandle.Enabled">
+      <summary>Turn fog on or off. Null inherits.</summary>
+    </member>
+    <member name="F:RustBuster2016.API.FogHandle.Mode">
+      <summary>Linear or exponential. Null inherits.</summary>
+    </member>
+    <member name="F:RustBuster2016.API.FogHandle.Color">
+      <summary>Fog colour. Null inherits. Setting it suppresses Time of Day's colour.</summary>
+    </member>
+    <member name="F:RustBuster2016.API.FogHandle.StartDistance">
+      <summary>Linear fog start distance. Null inherits.</summary>
+    </member>
+    <member name="F:RustBuster2016.API.FogHandle.EndDistance">
+      <summary>Linear fog end distance. Null inherits.</summary>
+    </member>
+    <member name="F:RustBuster2016.API.FogHandle.Density">
+      <summary>Exponential fog density. Null inherits.</summary>
+    </member>
+    <member name="M:RustBuster2016.API.FogHandle.Release">
+      <summary>Drops this layer. Idempotent, never throws.</summary>
+    </member>
+    <member name="T:RustBuster2016.API.FogControl">
+      <summary>
+             The single owner of RenderSettings fog.
+            
+             WHY THIS EXISTS
+             ---------------
+             Fog has three things competing for it: Time of Day writes RenderSettings.fogColor
+             every frame whenever TOD_Sky.World.SetFogColor is true, RustBuster takes it over while
+             the player is underwater, and plugins may want it for weather or events. Whoever
+             writes RenderSettings last wins, and nobody can put back a value they never saw.
+            
+             So instead of snapshot and restore, fog is composed from a stack of layers. Releasing
+             a layer does not restore an old snapshot, it simply recomposes from whatever layers
+             remain. A plugin that changes fog while the player is underwater therefore takes
+             effect the moment they surface, rather than being silently overwritten by a stale
+             snapshot taken before they went under.
+            
+             HOW LAYERS COMPOSE
+             ------------------
+             Layers are sorted by Priority, low to high, and applied in order. Every field is
+             nullable, so a layer only overrides what it sets and inherits the rest. The underwater
+             override is just another layer, at FogPriority.Underwater.
+            
+             TIME OF DAY
+             -----------
+             TOD_Sky only ever writes fogColor, and only when World.SetFogColor is true. It never
+             touches fog, fogMode, fogStartDistance, fogEndDistance or fogDensity. So whenever any
+             layer specifies a Color, that flag is cleared for the duration and restored when no
+             layer does. Nothing here needs IL patching.
+            
+             USAGE
+             -----
+                 FogHandle fog = FogControl.Push(new FogRequest
+                 {
+                     Owner    = "WeatherPlugin",
+                     Priority = FogPriority.Weather,
+                     Enabled  = true,
+                     Mode     = FogMode.Linear,
+                     Color    = new Color(0.6f, 0.6f, 0.65f),
+                     StartDistance = 10f,
+                     EndDistance   = 200f
+                 });
+            
+                 fog.EndDistance = 120f;   // thickens on the next frame
+                 fog.Release();            // recomposes from the remaining layers
+             </summary>
+    </member>
+    <member name="P:RustBuster2016.API.FogControl.LayerCount">
+      <summary>How many layers are currently active.</summary>
+    </member>
+    <member name="P:RustBuster2016.API.FogControl.UnderwaterActive">
+      <summary>True while RustBuster's underwater layer is active.</summary>
+    </member>
+    <member name="P:RustBuster2016.API.FogControl.WaterState">
+      <summary>
+            The player's current water state, mirrored here so a fog plugin can react without
+            taking a dependency on WaterSystem.
+            </summary>
+    </member>
+    <member name="M:RustBuster2016.API.FogControl.Push(RustBuster2016.API.FogRequest)">
+      <summary>
+            Adds a fog layer and returns a live handle. Returns null only if the request is
+            null. Changing the handle's fields updates the composed fog on the next frame.
+            </summary>
+      <param name="request">What this layer overrides. Unset fields inherit.</param>
+    </member>
+    <member name="M:RustBuster2016.API.FogControl.Release(RustBuster2016.API.FogHandle)">
+      <summary>
+            Drops a layer and recomposes. Returns false if the handle is already released or
+            was never ours. Never throws.
+            </summary>
+      <param name="handle">The handle returned by Push.</param>
+    </member>
+    <member name="M:RustBuster2016.API.FogControl.ReleaseAllFor(System.String)">
+      <summary>
+            Drops every layer belonging to a plugin. Called automatically when a plugin
+            unloads, so a plugin that forgets to clean up does not leave the world foggy.
+            </summary>
+      <param name="owner">The plugin name used in FogRequest.Owner.</param>
+    </member>
+    <member name="M:RustBuster2016.API.FogControl.ReleaseAll">
+      <summary>
+            Drops every layer and puts the fog back to how it was before anything pushed.
+            </summary>
     </member>
     <member name="F:RustBuster2016.API.Hooks.RBVersion">
       <summary>
@@ -1565,6 +1813,24 @@
     <member name="E:RustBuster2016.API.Hooks.OnRustBusterLocalPlayerDetached">
       <summary>
             Runs after the local player has been detached and everything restored.
+            </summary>
+    </member>
+    <member name="E:RustBuster2016.API.Hooks.OnRustBusterWaterStateChanged">
+      <summary>
+            Runs when the local player moves between dry land, the water surface and being
+            fully submerged.
+            </summary>
+    </member>
+    <member name="E:RustBuster2016.API.Hooks.OnRustBusterOxygenChanged">
+      <summary>
+            Runs as the local player's air changes while swimming. Throttled by
+            WaterSystem.OxygenEventStep, not fired every physics step.
+            </summary>
+    </member>
+    <member name="E:RustBuster2016.API.Hooks.OnRustBusterOutOfAir">
+      <summary>
+            Runs once when the local player's air hits zero, and not again until it refills.
+            The client cannot apply damage, so use this to send your own drown message.
             </summary>
     </member>
     <member name="M:RustBuster2016.API.Hooks.LogData(System.String,System.String)">
@@ -2437,6 +2703,418 @@
     <member name="P:RustBuster2016.API.Util.CurrentWorkingThreadID">
       <summary>
             Returns the current working thread ID.
+            </summary>
+    </member>
+    <member name="T:RustBuster2016.API.WaterState">
+      <summary>
+            Where the local player is relative to the water surface.
+            </summary>
+    </member>
+    <member name="F:RustBuster2016.API.WaterState.None">
+      <summary>Dry.</summary>
+    </member>
+    <member name="F:RustBuster2016.API.WaterState.Wading">
+      <summary>Feet in the water, head above it. The player floats at the surface.</summary>
+    </member>
+    <member name="F:RustBuster2016.API.WaterState.Submerged">
+      <summary>Eyes below the surface. Free vertical movement, air drains.</summary>
+    </member>
+    <member name="T:RustBuster2016.API.WaterSystem">
+      <summary>
+             Client side swimming.
+            
+             LIFECYCLE
+             ---------
+             The driver only exists while the local player is alive and spawned. It is started by
+             NotifyAlive, which Hooks calls from OnPlayerMove, and OnPlayerMove is reached from
+             HumanController.SendToServer whose Update returns early on "this.dead". So the
+             heartbeat IS the aliveness condition, at the network send rate.
+            
+             It shuts down on death, on respawn, on disconnect, and on a heartbeat timeout, which
+             covers despawn and level changes without needing a hook for either.
+            
+             DETECTION
+             ---------
+             Unity 4.5 has no buoyancy and the legacy water package is shader and mesh only, so
+             this is manual, and it does NOT use colliders. WaterBase is a MonoBehaviour on every
+             water object, so FindObjectsOfType gives us every body and each one's Renderer.bounds
+             gives the extent. Testing a point against a handful of Bounds is cheaper than a
+             physics query and needs no layer, no collision matrix and no IL patching.
+            
+             MOVEMENT
+             --------
+             Driven by writing CCMotor.velocity, the same approach LocalAttachment uses for seats.
+             Two things fall out of that for free:
+            
+               - The velocity setter clears the motor's grounded flag, and FootstepEmitter.Update
+                 returns early when !stateFlags.grounded, so footsteps stop by themselves.
+               - Zeroing velocity on entry means HumanController's fall impact reads ~0, so diving
+                 in from a height does not register as a fall.
+            
+             The swimming state is published on stateFlags bit 32768. SendToServer masks with
+             -24577, which strips 8192 and 16384 but leaves 32768 intact, so the bit replicates to
+             the server and on to other clients with no wire format change.
+             </summary>
+    </member>
+    <member name="F:RustBuster2016.API.WaterSystem.SwimFlag">
+      <summary>stateFlags bit used to publish "this player is swimming".</summary>
+    </member>
+    <member name="F:RustBuster2016.API.WaterSystem.Enabled">
+      <summary>Master switch. When false the driver shuts down and stays down.</summary>
+    </member>
+    <member name="F:RustBuster2016.API.WaterSystem.SwimSpeed">
+      <summary>Vertical swim speed in metres per second, up or down.</summary>
+    </member>
+    <member name="F:RustBuster2016.API.WaterSystem.FloatEyeOffset">
+      <summary>
+             How far the eyes sit ABOVE the waterline when floating.
+            
+             Must be positive. A negative value parks the eyes under the surface, which
+             re-triggers Submerged on the very next tick, so the player can never get their
+             head out and drowns while apparently floating.
+             </summary>
+    </member>
+    <member name="F:RustBuster2016.API.WaterSystem.SurfaceHeadroom">
+      <summary>
+            How far above the waterline a swimmer can climb before normal gravity takes over
+            again. Gives the headroom needed to actually breathe and be visible to others.
+            </summary>
+    </member>
+    <member name="F:RustBuster2016.API.WaterSystem.SurfaceExitMargin">
+      <summary>
+            How far the eyes must rise above the surface before the player counts as having
+            surfaced. Stops the state chattering on the boundary, and keeps the fog on until
+            the head is properly clear rather than lifting the moment it grazes the line.
+            </summary>
+    </member>
+    <member name="F:RustBuster2016.API.WaterSystem.SubmergeTriggerOffset">
+      <summary>
+             Raises the point at which the underwater effect switches on, in metres.
+            
+             POSITIVE makes it trigger EARLIER, that is in shallower water. The effect fires
+             when the face sample is within this distance of the surface rather than strictly
+             below it, so it lands as the waterline crosses the screen instead of a moment
+             after the head has fully gone under.
+             </summary>
+    </member>
+    <member name="F:RustBuster2016.API.WaterSystem.UseCameraAsFace">
+      <summary>
+             Sample the player camera position as the face. On by default, and it is the only
+             exact option.
+            
+             Both estimates were wrong in opposite directions: Character.eyesOrigin sits above
+             the visible head, and a fixed height above the character origin does not track
+             stance. The camera is literally where the player is looking from, so when the
+             camera is under the surface the face is under the surface. Nothing to tune and
+             nothing to get backwards.
+             </summary>
+    </member>
+    <member name="F:RustBuster2016.API.WaterSystem.HeadHeight">
+      <summary>
+            Height of the face above the character origin, used only when the camera cannot
+            be found. LOWER means the effect starts in shallower water, higher means the
+            player must sink further first.
+            </summary>
+    </member>
+    <member name="F:RustBuster2016.API.WaterSystem.FaceSampleOffset">
+      <summary>
+            Lifts or lowers the face sample. NEGATIVE makes the effect start sooner, which is
+            what you want if the fog still kicks in later than the face going under.
+            </summary>
+    </member>
+    <member name="F:RustBuster2016.API.WaterSystem.SurfaceThrust">
+      <summary>
+            Extra upward speed given when a swimmer pushes off the surface, so they can clear
+            the lip and land on terrain. Legacy has no water traversal at all, so without a
+            boost players get stuck circling a shoreline they cannot climb.
+            </summary>
+    </member>
+    <member name="F:RustBuster2016.API.WaterSystem.SurfaceThrustCooldown">
+      <summary>Seconds before another surface thrust can be used.</summary>
+    </member>
+    <member name="F:RustBuster2016.API.WaterSystem.HideSkyDomesUnderwater">
+      <summary>
+             Hide the Time of Day sky domes while submerged.
+            
+             This is what removes the white glow at the edge of the world. It is not the
+             skybox and not the clear colour, it is the TOD atmosphere and clear domes being
+             rendered from underneath, so no camera setting touches it. Clamping the far plane
+             did hide it, but it also clipped terrain and made the ground shimmer, so the
+             domes are switched off directly instead.
+             </summary>
+    </member>
+    <member name="F:RustBuster2016.API.WaterSystem.UseUnderwaterShell">
+      <summary>
+             Surround the camera with a solid fog coloured shell while submerged.
+            
+             Hiding the sky domes and repainting the camera clear colour both depend on what
+             else happens to render that frame, which is why the sky kept showing through. A
+             shell does not: it is an inside out cube parented to the camera, drawn just past
+             the fog distance, so there is physically nothing to see beyond it. No sky, no map
+             edge, no void, whatever the rest of the pipeline does.
+             </summary>
+    </member>
+    <member name="F:RustBuster2016.API.WaterSystem.ShellRadiusFactor">
+      <summary>
+             Shell radius as a fraction of UnderwaterFogEnd.
+            
+             Must be BELOW 1.0. The shell sat at 45 metres while the far plane was clamped to
+             30, so it was clipped away and never drawn at all, which is why it never helped.
+             Inside the far plane it becomes the thing you see instead of the hard circle
+             where clipped geometry stops: uniform water colour in every direction.
+             </summary>
+    </member>
+    <member name="F:RustBuster2016.API.WaterSystem.ClampFarClipUnderwater">
+      <summary>
+             Pull the camera far plane in while submerged, so the far side of the map is never
+             drawn at all.
+            
+             This is the reliable fix. The shell depends on a shader being present in the
+             build, and the camera clear colour depends on what else renders that frame, but
+             clipping is unconditional: geometry past the plane does not exist as far as the
+             renderer is concerned.
+            
+             It caused terrain to shimmer the first time only because the plane was set close
+             enough to cut through visible ground. FarClipFogMultiplier keeps it well past the
+             point the fog is already opaque, so the boundary is invisible.
+             </summary>
+    </member>
+    <member name="F:RustBuster2016.API.WaterSystem.FarClipFogMultiplier">
+      <summary>
+             Far plane as a multiple of UnderwaterFogEnd.
+            
+             At 1.0 the plane sits exactly where the fog becomes opaque, which is the only
+             setting that works if the terrain shader does not support fog. That is the likely
+             case here: geometry at the map edge staying dark instead of fading toward the
+             water colour means fog is never applied to it, so it has to be clipped instead.
+            
+             Raise it above 1.0 only if the terrain does fog correctly and you want more
+             headroom between the fog and the clip boundary.
+             </summary>
+    </member>
+    <member name="F:RustBuster2016.API.WaterSystem.FloatSpring">
+      <summary>How hard the float spring pulls toward the surface.</summary>
+    </member>
+    <member name="F:RustBuster2016.API.WaterSystem.OxygenSeconds">
+      <summary>Seconds of air. Drains while submerged, refills faster when not.</summary>
+    </member>
+    <member name="F:RustBuster2016.API.WaterSystem.OxygenRefillMultiplier">
+      <summary>Multiplier on the refill rate relative to the drain rate.</summary>
+    </member>
+    <member name="F:RustBuster2016.API.WaterSystem.OxygenEventStep">
+      <summary>
+            Minimum change in Oxygen01 before OnRustBusterOxygenChanged fires again, so a UI
+            bar gets a manageable number of updates instead of one per physics step.
+            </summary>
+    </member>
+    <member name="F:RustBuster2016.API.WaterSystem.AscendKey">
+      <summary>Key held to swim upward.</summary>
+    </member>
+    <member name="F:RustBuster2016.API.WaterSystem.DescendKey">
+      <summary>Key held to swim downward.</summary>
+    </member>
+    <member name="F:RustBuster2016.API.WaterSystem.DrawUnderwaterTint">
+      <summary>Draw the blue tint while submerged.</summary>
+    </member>
+    <member name="F:RustBuster2016.API.WaterSystem.DrawOxygenBar">
+      <summary>
+            Draw the built in oxygen bar. Turn it off if a plugin draws its own from
+            OnRustBusterOxygenChanged.
+            </summary>
+    </member>
+    <member name="F:RustBuster2016.API.WaterSystem.OxygenBarWidth">
+      <summary>Width of the built in oxygen bar in pixels.</summary>
+    </member>
+    <member name="F:RustBuster2016.API.WaterSystem.OxygenBarHeight">
+      <summary>Height of the built in oxygen bar in pixels.</summary>
+    </member>
+    <member name="F:RustBuster2016.API.WaterSystem.OxygenBarBottomMargin">
+      <summary>Distance from the bottom of the screen to the oxygen bar, in pixels.</summary>
+    </member>
+    <member name="F:RustBuster2016.API.WaterSystem.UnderwaterTint">
+      <summary>Tint colour applied over the screen while submerged.</summary>
+    </member>
+    <member name="F:RustBuster2016.API.WaterSystem.UnderwaterFog">
+      <summary>
+             Apply linear blue fog while submerged, so visibility falls off the way it does
+             underwater in other games.
+            
+             No IL patching is needed for this. TOD_Sky only ever writes RenderSettings.fogColor,
+             and only when World.SetFogColor is true, so clearing that flag hands us the fog
+             completely. It never touches fog, fogMode, fogStartDistance or fogEndDistance at all.
+             </summary>
+    </member>
+    <member name="F:RustBuster2016.API.WaterSystem.UnderwaterFogMode">
+      <summary>Fog mode to use while submerged. ExponentialSquared helps with legacy shaders.</summary>
+    </member>
+    <member name="F:RustBuster2016.API.WaterSystem.UnderwaterFogDensity">
+      <summary>Fog density. Lower value means higher visibility.</summary>
+    </member>
+    <member name="F:RustBuster2016.API.WaterSystem.UnderwaterFogColor">
+      <summary>Fog colour while submerged.</summary>
+    </member>
+    <member name="F:RustBuster2016.API.WaterSystem.UnderwaterFogStart">
+      <summary>
+            Distance at which underwater fog begins, in metres. Zero means it starts right at
+            the camera, so it is unmistakable the instant the face goes under.
+            </summary>
+    </member>
+    <member name="F:RustBuster2016.API.WaterSystem.UnderwaterFogEnd">
+      <summary>
+             Underwater visibility in metres. One fixed value at every depth.
+            
+             There is no depth scaling any more. Scaling meant the fog was set long and
+             therefore invisible near the surface, so the effect appeared to switch on only
+             after descending several metres when in fact it had been on the whole time.
+             </summary>
+    </member>
+    <member name="F:RustBuster2016.API.WaterSystem.PaintCameraBackground">
+      <summary>
+             Paint the camera background with the fog colour while submerged.
+            
+             Without this the edge of the world reads as a flat white void underwater: the
+             level was never built to be seen from below the waterline, so there is nothing
+             out there and the skybox or clear colour shows straight through. Matching the
+             background to the fog turns that hole into distance.
+             </summary>
+    </member>
+    <member name="F:RustBuster2016.API.WaterSystem.SurfaceBias">
+      <summary>
+            Offset applied to a volume's top when working out the surface height. Water
+            meshes have thickness, so the rendered bounds top sits slightly above the
+            visual waterline.
+            </summary>
+    </member>
+    <member name="F:RustBuster2016.API.WaterSystem.RebuildInterval">
+      <summary>Seconds between rescans while no water has been found yet.</summary>
+    </member>
+    <member name="F:RustBuster2016.API.WaterSystem.MaxConsecutiveFailures">
+      <summary>
+            Consecutive failures before the whole system switches itself off. A feature that
+            throws every frame costs far more than one that is simply absent.
+            </summary>
+    </member>
+    <member name="F:RustBuster2016.API.WaterSystem.DebugLog">
+      <summary>
+            Log the swim state once a second while in or near water. Off by default; turn it
+            on to see the real eye height, surface and velocity rather than guessing.
+            </summary>
+    </member>
+    <member name="F:RustBuster2016.API.WaterSystem.ClampToWaterLine">
+      <summary>
+             Clamp the surface to WaterLine.Height so the client agrees with the server.
+            
+             The server has one global WaterLine.Height and no renderers to measure, while the
+             client has per WaterBase bounds. Drowning is computed from depth, so the two have
+             to agree or a player drowns on one side and not the other. Intersecting them
+             gives the best of both: the volumes supply the horizontal footprint, so you do
+             not "swim" in mid air over dry land at that altitude, and WaterLine supplies the
+             authoritative surface height.
+            
+             Turn this off only if the server is taught about per volume heights as well.
+             </summary>
+    </member>
+    <member name="F:RustBuster2016.API.WaterSystem.AliveTimeout">
+      <summary>
+            Seconds without an aliveness heartbeat before the driver shuts itself down.
+            Needs to comfortably exceed NetCull.sendInterval.
+            </summary>
+    </member>
+    <member name="P:RustBuster2016.API.WaterSystem.State">
+      <summary>Current water state of the local player.</summary>
+    </member>
+    <member name="P:RustBuster2016.API.WaterSystem.Oxygen01">
+      <summary>Remaining air as 0 to 1. Only drains while Submerged.</summary>
+    </member>
+    <member name="P:RustBuster2016.API.WaterSystem.ServerAuthoritativeOxygen">
+      <summary>
+            True once the server has sent an oxygen value, meaning it runs the swim system too.
+            While false the client is predicting on its own.
+            </summary>
+    </member>
+    <member name="F:RustBuster2016.API.WaterSystem.ServerOxygenTimeout">
+      <summary>
+            Seconds without a server oxygen update before the client goes back to predicting
+            on its own. Must exceed the server's send interval.
+            </summary>
+    </member>
+    <member name="F:RustBuster2016.API.WaterSystem.OxygenCorrectionThreshold">
+      <summary>
+            Kept for compatibility. No longer used: the client does not run a competing
+            simulation while the server is authoritative, so there is nothing to correct.
+            </summary>
+    </member>
+    <member name="M:RustBuster2016.API.WaterSystem.ApplyServerOxygen(System.Single)">
+      <summary>
+             Applies an oxygen value pushed by the server through the injected rbOxy RPC.
+            
+             The client keeps predicting locally between updates, because the server only
+             sends a few times a second and a bar driven at that rate looks broken. The server
+             value is the truth though, so anything beyond OxygenCorrectionThreshold snaps.
+             </summary>
+      <param name="oxygen">Remaining air from 0 to 1, as the server sees it.</param>
+    </member>
+    <member name="P:RustBuster2016.API.WaterSystem.OxygenSecondsRemaining">
+      <summary>Roughly how many seconds of air remain at the current drain rate.</summary>
+    </member>
+    <member name="P:RustBuster2016.API.WaterSystem.IsSubmerged">
+      <summary>True while the eyes are under the surface.</summary>
+    </member>
+    <member name="P:RustBuster2016.API.WaterSystem.IsInWater">
+      <summary>True while any part of the player is in water.</summary>
+    </member>
+    <member name="P:RustBuster2016.API.WaterSystem.IsActive">
+      <summary>True while the driver is running, meaning alive and spawned.</summary>
+    </member>
+    <member name="P:RustBuster2016.API.WaterSystem.VolumeCount">
+      <summary>How many water volumes were found on this level.</summary>
+    </member>
+    <member name="M:RustBuster2016.API.WaterSystem.RebuildVolumes">
+      <summary>
+            Rescans the level for water. Runs on start, every RebuildInterval seconds, and
+            whenever the list is empty, so a level change repairs itself.
+            </summary>
+    </member>
+    <member name="P:RustBuster2016.API.WaterSystem.WaterLineHeight">
+      <summary>
+            The global waterline the server uses, or float.MinValue when the level has none.
+            WaterLine.Height is 0 on maps without water, which is also the condition the
+            server's own drown check tests for.
+            </summary>
+    </member>
+    <member name="M:RustBuster2016.API.WaterSystem.AddExclusion(UnityEngine.Bounds)">
+      <summary>
+             Marks a region as dry regardless of the waterline, so a sealed structure below the
+             surface does not drown or fog whoever is inside it.
+            
+             Intended for plugins that let people build underwater: check the structure is
+             properly enclosed, then register its interior here.
+             </summary>
+      <param name="bounds">The dry region, in world space.</param>
+    </member>
+    <member name="M:RustBuster2016.API.WaterSystem.RemoveExclusion(UnityEngine.Bounds)">
+      <summary>Removes a previously added dry region. Returns false if it was not registered.</summary>
+    </member>
+    <member name="M:RustBuster2016.API.WaterSystem.ClearExclusions">
+      <summary>Clears every dry region.</summary>
+    </member>
+    <member name="P:RustBuster2016.API.WaterSystem.ExclusionCount">
+      <summary>How many dry regions are currently registered.</summary>
+    </member>
+    <member name="M:RustBuster2016.API.WaterSystem.IsPointExcluded(UnityEngine.Vector3)">
+      <summary>True when the point sits inside a registered dry region.</summary>
+    </member>
+    <member name="M:RustBuster2016.API.WaterSystem.IsPointInWater(UnityEngine.Vector3)">
+      <summary>
+            True when the point is in water: below the surface, and not inside a registered
+            dry region.
+            </summary>
+    </member>
+    <member name="M:RustBuster2016.API.WaterSystem.GetSurfaceY(UnityEngine.Vector3)">
+      <summary>
+            Surface height above the point, or float.MinValue when the point is not in water.
+            Picks the lowest surface that still contains the point, so overlapping bodies at
+            different heights behave sensibly.
             </summary>
     </member>
     <member name="T:RustBuster2016.API.Web">

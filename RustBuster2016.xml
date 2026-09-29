@@ -4,6 +4,60 @@
     <name>RustBuster2016</name>
   </assembly>
   <members>
+    <member name="T:RustBuster2016.API.AssetBundleLoader">
+      <summary>
+             Shared, serialised asset-bundle loader for RustBuster plugins.
+            
+             <para><b>Problem it solves.</b>  When several plugins each call
+             <c>WWW.LoadFromCacheOrDownload</c> independently they all start at the
+             same moment (end of the loading screen), producing a single large
+             managed-heap spike that coincides with Mono JIT-compiling player code.
+             </para><para><b>How to use.</b>  Instead of calling <c>WWW.LoadFromCacheOrDownload</c>
+             directly, a plugin calls
+             <see cref="M:RustBuster2016.API.AssetBundleLoader.LoadBundle(System.String,System.Int32,System.Action{UnityEngine.AssetBundle})" />.  RustBuster
+             owns the queue and processes entries one at a time; the callback receives
+             the loaded <see cref="T:UnityEngine.AssetBundle" /> (or <c>null</c> on error) when
+             it is the plugin's turn.
+             </para><para>
+             The queue is started automatically on first use and runs on the same
+             <see cref="T:RustBuster2016.Loom" /> MonoBehaviour that the rest of the codebase uses for
+             main-thread coroutines.  No plugin needs to manage the runner lifecycle.
+             </para></summary>
+    </member>
+    <member name="M:RustBuster2016.API.AssetBundleLoader.LoadBundle(System.String,System.Int32,System.Action{UnityEngine.AssetBundle})">
+      <summary>
+            Enqueues an asset-bundle load request.  The bundle will be loaded
+            via <c>WWW.LoadFromCacheOrDownload</c> after all previously queued
+            requests have completed, so at most one WWW download is in flight
+            at any given moment.
+            </summary>
+      <param name="path">
+            The URL or local path passed to
+            <c>WWW.LoadFromCacheOrDownload</c>.  Local paths must begin with
+            <c>file://</c>.
+            </param>
+      <param name="version">
+            Cache version number.  Pass <c>0</c> to disable caching (equivalent
+            to constructing a plain <c>WWW</c>).
+            </param>
+      <param name="done">
+            Callback invoked on the main Unity thread once the bundle has been
+            loaded.  The <see cref="T:UnityEngine.AssetBundle" /> argument is <c>null</c> when
+            loading failed; inspect <c>done</c>'s closure for error details if
+            needed.  The callback is always invoked, even on failure, so callers
+            can release waiting state unconditionally.
+            </param>
+      <exception cref="T:System.ArgumentNullException">
+            Thrown when <paramref name="path" /> or <paramref name="done" /> is
+            <c>null</c>.
+            </exception>
+    </member>
+    <member name="P:RustBuster2016.API.AssetBundleLoader.PendingCount">
+      <summary>
+            Returns the number of bundle requests that are currently waiting in
+            the queue (not counting the one actively loading, if any).
+            </summary>
+    </member>
     <member name="T:RustBuster2016.API.Concurrent.ConcurrentDictionary`2">
       <summary>
             A thread-safe implementation of a Dictionary for .NET 3.5 using ReaderWriterLock.
@@ -480,6 +534,66 @@
             </summary>
       <param name="MakeChatUIDisappear">If true, also closes the chat UI immediately.</param>
     </member>
+    <member name="T:RustBuster2016.API.Events.ClientFileStatus">
+      <summary>
+            Describes the RustBuster-downloadable status of a single file that the
+            server declared during the download phase.
+            </summary>
+    </member>
+    <member name="P:RustBuster2016.API.Events.ClientFileStatus.FileName">
+      <summary>
+            The bare file name as declared by the server (e.g. <c>mymod.unity3d</c>).
+            </summary>
+    </member>
+    <member name="P:RustBuster2016.API.Events.ClientFileStatus.ClientPath">
+      <summary>
+            The relative sub-directory path under <c>RB_Data</c> where the file
+            lives on disk.  Empty string means the file is placed directly inside
+            <c>RB_Data</c>.
+            </summary>
+    </member>
+    <member name="P:RustBuster2016.API.Events.ClientFileStatus.IsUrlDownload">
+      <summary>
+        <c>true</c> when the file was downloaded from an external URL rather
+            than streamed through the RustBuster server channel.
+            </summary>
+    </member>
+    <member name="P:RustBuster2016.API.Events.ClientFileStatus.State">
+      <summary>
+            The RustBuster downloadable state associated with this file.
+            </summary>
+    </member>
+    <member name="T:RustBuster2016.API.Events.ClientFilesDownloadedEvent">
+      <summary>
+             Event fired (via
+             <see cref="E:RustBuster2016.API.Hooks.OnRustBusterClientFilesDownloaded2" />) after the
+             RustBuster download phase completes and all plugins have been
+             initialised.  It carries the overall outcome together with a detailed
+             list of every file the server declared, including their local path and
+             RB-downloadable status.
+            
+             <para>
+             When the server reported no downloadable files at all
+             (<see cref="F:RustBuster2016.API.Hooks.RBDownloadableState.ThereWereNoDownloadables" />) the
+             <see cref="P:RustBuster2016.API.Events.ClientFilesDownloadedEvent.Files" /> list is empty.  Subscribers must handle that case.
+             </para></summary>
+    </member>
+    <member name="P:RustBuster2016.API.Events.ClientFilesDownloadedEvent.OverallState">
+      <summary>
+            The overall outcome of the RustBuster download phase.
+            <list type="bullet"><item><see cref="F:RustBuster2016.API.Hooks.RBDownloadableState.AllDownloaded" /> - every declared file was processed successfully.</item><item><see cref="F:RustBuster2016.API.Hooks.RBDownloadableState.ThereWereNoDownloadables" /> - the server declared zero extra files, <see cref="P:RustBuster2016.API.Events.ClientFilesDownloadedEvent.Files" /> will be empty.</item><item><see cref="F:RustBuster2016.API.Hooks.RBDownloadableState.DownloadFailed" /> - the download request to the server failed entirely.</item></list></summary>
+    </member>
+    <member name="P:RustBuster2016.API.Events.ClientFilesDownloadedEvent.Files">
+      <summary>
+            The list of every file that the server declared during the download
+            phase, along with each file's local path and RB-downloadable status.
+            Empty when <see cref="P:RustBuster2016.API.Events.ClientFilesDownloadedEvent.OverallState" /> is
+            <see cref="F:RustBuster2016.API.Hooks.RBDownloadableState.ThereWereNoDownloadables" />.
+            When <see cref="P:RustBuster2016.API.Events.ClientFilesDownloadedEvent.OverallState" /> is
+            <see cref="F:RustBuster2016.API.Hooks.RBDownloadableState.DownloadFailed" /> the list contains
+            whatever partial file records were available at the point of failure.
+            </summary>
+    </member>
     <member name="T:RustBuster2016.API.Events.CraftingEvent">
       <summary>
             Event fired when the local player starts crafting an item.
@@ -533,6 +647,23 @@
     <member name="M:RustBuster2016.API.Events.CraftWindowClickEvent.Cancel">
       <summary>
             Cancels the event, preventing the native click action from executing.
+            </summary>
+    </member>
+    <member name="T:RustBuster2016.API.Events.DatablockDictionaryInitializedEvent">
+      <summary>
+            Fired at the end of <c>InitializeHandler</c> once the <see cref="T:DatablockDictionary" /> has been
+            fully populated with item datablocks and loot spawn lists.
+            Use this to safely access datablock data at startup.
+            </summary>
+    </member>
+    <member name="P:RustBuster2016.API.Events.DatablockDictionaryInitializedEvent.All">
+      <summary>
+            All registered item datablocks, in load order.
+            </summary>
+    </member>
+    <member name="P:RustBuster2016.API.Events.DatablockDictionaryInitializedEvent.LootSpawnLists">
+      <summary>
+            All registered loot spawn lists keyed by name.
             </summary>
     </member>
     <member name="T:RustBuster2016.API.Events.DeathScreenDisAppearEvent">
@@ -999,6 +1130,72 @@
             ~ and @ characters are not allowed.
             </summary>
     </member>
+    <member name="T:RustBuster2016.API.Events.NGCViewCreatedEvent">
+      <summary>
+             Fired after a network-instantiated view has been created by the server (NGC "A" RPC)
+             and <c>PostInstantiate</c> has completed successfully.
+            
+             The view is fully initialised at the point this event fires: all components are
+             attached, the GameObject exists in the scene and the NetworkViewCache has already
+             been updated with the new entry.
+             </summary>
+    </member>
+    <member name="P:RustBuster2016.API.Events.NGCViewCreatedEvent.NGC">
+      <summary>
+            The NGC group component that received the "A" (Add) RPC from the server.
+            </summary>
+    </member>
+    <member name="P:RustBuster2016.API.Events.NGCViewCreatedEvent.View">
+      <summary>
+            The newly created <see cref="T:NGCView" />.
+            Its <c>innerID</c>, <c>id</c>, <c>gameObject</c> and prefab data are all
+            available here.
+            </summary>
+    </member>
+    <member name="P:RustBuster2016.API.Events.NGCViewCreatedEvent.Info">
+      <summary>
+            The uLink network message info that accompanied the server RPC, including
+            sender, timestamp, and network view ID.
+            </summary>
+    </member>
+    <member name="T:RustBuster2016.API.Events.NGCViewDestroyedEvent">
+      <summary>
+             Fired just before a network view is destroyed by the server (NGC "D" RPC).
+            
+             This event fires <em>before</em><c>DestroyView</c> is called, so the
+             <see cref="P:RustBuster2016.API.Events.NGCViewDestroyedEvent.View" /> and its <c>gameObject</c> are still alive and safe to read
+             at the point subscribers run. The NetworkViewCache has already removed the entry.
+             </summary>
+    </member>
+    <member name="P:RustBuster2016.API.Events.NGCViewDestroyedEvent.NGC">
+      <summary>
+            The NGC group component that received the "D" (Delete) RPC from the server.
+            </summary>
+    </member>
+    <member name="P:RustBuster2016.API.Events.NGCViewDestroyedEvent.View">
+      <summary>
+            The <see cref="T:NGCView" /> that is about to be destroyed.
+            Safe to read here; do not store a long-lived reference — the underlying
+            <c>GameObject</c> will be destroyed immediately after this event returns.
+            </summary>
+    </member>
+    <member name="P:RustBuster2016.API.Events.NGCViewDestroyedEvent.Info">
+      <summary>
+            The uLink network message info that accompanied the server RPC.
+            </summary>
+    </member>
+    <member name="T:RustBuster2016.API.Events.PlayerInventoryRefreshedEvent">
+      <summary>
+            Fired at the end of <c>PlayerInventoryRefreshHandler</c> when the local player's
+            inventory has just been refreshed by the server. Use this to inspect or react to
+            inventory changes (item additions, removals, slot updates).
+            </summary>
+    </member>
+    <member name="P:RustBuster2016.API.Events.PlayerInventoryRefreshedEvent.Inventory">
+      <summary>
+            The <see cref="T:PlayerInventory" /> instance that was refreshed.
+            </summary>
+    </member>
     <member name="T:RustBuster2016.API.Events.PlayerRespawnEvent">
       <summary>
             Event fired when a player spawns / respawns in the world.
@@ -1052,6 +1249,38 @@
       <summary>
             Returns the water state at the moment the air was sampled. Air only drains while
             this is Submerged.
+            </summary>
+    </member>
+    <member name="T:RustBuster2016.API.Events.PlayerUseEvent">
+      <summary>
+            Fired when the player presses the Use key (E) on an interactable (door, loot box, etc.).
+            Raised inside <c>BeginQueryHandler</c> after a valid <see cref="P:RustBuster2016.API.Events.PlayerUseEvent.NetEntityID" /> is resolved.
+            Cancel to block the interaction entirely.
+            </summary>
+    </member>
+    <member name="P:RustBuster2016.API.Events.PlayerUseEvent.Contextual">
+      <summary>
+            The interactable the player aimed at when pressing Use.
+            </summary>
+    </member>
+    <member name="P:RustBuster2016.API.Events.PlayerUseEvent.Implementor">
+      <summary>
+            The MonoBehaviour implementor of the interactable (e.g. the door or loot crate).
+            </summary>
+    </member>
+    <member name="P:RustBuster2016.API.Events.PlayerUseEvent.NetEntityID">
+      <summary>
+            The resolved network entity ID of the interactable.
+            </summary>
+    </member>
+    <member name="P:RustBuster2016.API.Events.PlayerUseEvent.Cancelled">
+      <summary>
+            True if a plugin has cancelled this use interaction.
+            </summary>
+    </member>
+    <member name="M:RustBuster2016.API.Events.PlayerUseEvent.Cancel">
+      <summary>
+            Cancels the interaction, preventing the context menu / use action from being sent.
             </summary>
     </member>
     <member name="T:RustBuster2016.API.Events.PluginMessageResponse">
@@ -1687,6 +1916,29 @@
       <summary>
             Runs when ALL the client RBDownloadables were downloaded.
             </summary>
+      <remarks>
+            Deprecated. Use <see cref="E:RustBuster2016.API.Hooks.OnRustBusterClientFilesDownloaded2" /> instead, which provides
+            a per-file status list and correctly handles the
+            <see cref="F:RustBuster2016.API.Hooks.RBDownloadableState.ThereWereNoDownloadables" /> case.
+            </remarks>
+    </member>
+    <member name="E:RustBuster2016.API.Hooks.OnRustBusterClientFilesDownloaded2">
+      <summary>
+            Runs when ALL the client RBDownloadables were downloaded (or when the
+            server declared that there were none). Provides the overall outcome
+            together with a per-file status list.
+            </summary>
+      <remarks>
+        <para>
+            When <see cref="F:RustBuster2016.API.Hooks.RBDownloadableState.ThereWereNoDownloadables" /> is the
+            overall state, the <see cref="P:RustBuster2016.API.Events.ClientFilesDownloadedEvent.Files" />
+            list will be empty - subscribers must handle that case.
+            </para>
+        <para>
+            This event supersedes the obsolete
+            <see cref="E:RustBuster2016.API.Hooks.OnRustBusterClientFilesDownloaded" />.
+            </para>
+      </remarks>
     </member>
     <member name="E:RustBuster2016.API.Hooks.OnRustBusterMessageReceived">
       <summary>
@@ -1833,6 +2085,43 @@
             The client cannot apply damage, so use this to send your own drown message.
             </summary>
     </member>
+    <member name="E:RustBuster2016.API.Hooks.OnRustBusterPlayerUse">
+      <summary>
+            Fired when the player presses the Use key (E) on an interactable (door, loot box, etc.).
+            Cancel to block the interaction entirely.
+            </summary>
+    </member>
+    <member name="E:RustBuster2016.API.Hooks.OnRustBusterDatablockDictionaryInitialized">
+      <summary>
+            Fired once at the end of <c>InitializeHandler</c> when the <see cref="T:DatablockDictionary" />
+            has been fully populated. Safe to read all datablocks and loot spawn lists here.
+            </summary>
+    </member>
+    <member name="E:RustBuster2016.API.Hooks.OnRustBusterPlayerInventoryRefreshed">
+      <summary>
+            Fired at the end of <c>PlayerInventoryRefreshHandler</c> when the local player's
+            inventory has been refreshed by the server.
+            </summary>
+    </member>
+    <member name="E:RustBuster2016.API.Hooks.OnRustBusterLadderStateChanged">
+      <summary>
+            Runs when the local player grabs or releases a ladder.
+            </summary>
+    </member>
+    <member name="E:RustBuster2016.API.Hooks.OnRustBusterNGCViewCreated">
+      <summary>
+            Fired after the server instantiates a networked object (NGC "A" RPC) and
+            <c>PostInstantiate</c> has completed. The view is fully initialised and has
+            already been registered in <see cref="T:RustBuster2016.API.NetworkViewCache" />.
+            </summary>
+    </member>
+    <member name="E:RustBuster2016.API.Hooks.OnRustBusterNGCViewDestroyed">
+      <summary>
+            Fired just before the server destroys a networked object (NGC "D" RPC).
+            The view and its <c>gameObject</c> are still alive when subscribers run.
+            The entry has already been removed from <see cref="T:RustBuster2016.API.NetworkViewCache" />.
+            </summary>
+    </member>
     <member name="M:RustBuster2016.API.Hooks.LogData(System.String,System.String)">
       <summary>
             Logs a message to the RustBusterPlugins.log file using the specified plugin name and message.
@@ -1900,29 +2189,312 @@
             </summary>
       <returns></returns>
     </member>
+    <member name="T:RustBuster2016.API.KeyBindingRegistry">
+      <summary>
+             Central registry for named key-binding actions declared by plugins.
+            
+             <para>
+             Instead of hardcoding a <see cref="T:UnityEngine.KeyCode" /> inside each plugin, a
+             plugin registers a named action once (with a preferred default key).
+             RustBuster owns the rebinding table; the plugin just polls
+             <see cref="M:RustBuster2016.API.KeyBindingRegistry.IsPressed(System.String,System.String)" /> each frame.  When two plugins request the same
+             key, <see cref="M:RustBuster2016.API.KeyBindingRegistry.GetConflicts" /> exposes the collision so a UI can warn
+             the user.
+             </para><para>
+             Thread safety: all public methods lock on <see cref="F:RustBuster2016.API.KeyBindingRegistry.Lock" />. The
+             registry is designed to be written once at plugin load time and read
+             many times on the main Unity thread every frame.
+             </para></summary>
+    </member>
+    <member name="M:RustBuster2016.API.KeyBindingRegistry.Register(System.String,System.String,UnityEngine.KeyCode,System.String)">
+      <summary>
+            Registers a named action for <paramref name="pluginName" /> with the
+            given <paramref name="defaultKey" />. Idempotent: calling this a
+            second time for the same plugin+action pair is a no-op (the
+            existing binding is kept so player customisations survive reloads).
+            </summary>
+      <param name="pluginName">
+            The plugin's display name. Use the same string you pass to
+            <see cref="M:RustBuster2016.API.Hooks.LogData(System.String,System.String)" />.
+            </param>
+      <param name="actionName">
+            Short identifier, e.g. <c>"OpenMenu"</c> or <c>"ToggleESP"</c>.
+            </param>
+      <param name="defaultKey">Preferred key when no rebind exists.</param>
+      <param name="description">
+            Optional human-readable label for a rebinding UI.
+            </param>
+      <returns>
+            The <see cref="T:RustBuster2016.API.KeyBindingRegistry.ActionBinding" /> — either freshly created or the
+            previously registered one.
+            </returns>
+    </member>
+    <member name="M:RustBuster2016.API.KeyBindingRegistry.Rebind(System.String,System.String,UnityEngine.KeyCode)">
+      <summary>
+            Reassigns the key bound to the specified action.
+            </summary>
+      <param name="pluginName">Plugin that owns the action.</param>
+      <param name="actionName">Action name as passed to <see cref="M:RustBuster2016.API.KeyBindingRegistry.Register(System.String,System.String,UnityEngine.KeyCode,System.String)" />.</param>
+      <param name="newKey">New key to assign.</param>
+      <returns>
+        <c>true</c> if the action was found and rebound; <c>false</c> if
+            the action was not registered.
+            </returns>
+    </member>
+    <member name="M:RustBuster2016.API.KeyBindingRegistry.Unregister(System.String)">
+      <summary>
+            Removes all actions registered by <paramref name="pluginName" />.
+            Call this from your plugin's unload/shutdown handler.
+            </summary>
+    </member>
+    <member name="M:RustBuster2016.API.KeyBindingRegistry.Get(System.String,System.String)">
+      <summary>
+            Returns the <see cref="T:RustBuster2016.API.KeyBindingRegistry.ActionBinding" /> for the given plugin / action
+            pair, or <c>null</c> if it has not been registered.
+            </summary>
+    </member>
+    <member name="M:RustBuster2016.API.KeyBindingRegistry.GetAll">
+      <summary>
+            Returns a snapshot of all currently registered bindings.
+            The array is a copy; modifying it has no effect on the registry.
+            </summary>
+    </member>
+    <member name="M:RustBuster2016.API.KeyBindingRegistry.GetConflicts">
+      <summary>
+            Returns every group of two or more actions that share the same
+            currently bound key.  An empty array means no conflicts.
+            </summary>
+    </member>
+    <member name="M:RustBuster2016.API.KeyBindingRegistry.IsHeld(System.String,System.String)">
+      <summary>
+            Convenience polling helper. Returns <c>true</c> while the key
+            bound to the specified action is held down this frame
+            (<see cref="M:UnityEngine.Input.GetKey(System.String)" />).
+            Returns <c>false</c> if the action is not registered.
+            </summary>
+    </member>
+    <member name="M:RustBuster2016.API.KeyBindingRegistry.IsPressed(System.String,System.String)">
+      <summary>
+            Convenience polling helper. Returns <c>true</c> on the first frame
+            the key bound to the specified action is pressed
+            (<see cref="M:UnityEngine.Input.GetKeyDown(System.String)" />).
+            Returns <c>false</c> if the action is not registered.
+            </summary>
+    </member>
+    <member name="M:RustBuster2016.API.KeyBindingRegistry.IsReleased(System.String,System.String)">
+      <summary>
+            Convenience polling helper. Returns <c>true</c> on the first frame
+            the key bound to the specified action is released
+            (<see cref="M:UnityEngine.Input.GetKeyUp(System.String)" />).
+            Returns <c>false</c> if the action is not registered.
+            </summary>
+    </member>
     <member name="T:RustBuster2016.API.KeyboardAPI">
       <summary>
+            Provides an API for simulating keyboard events, including sending key strokes
+            to DirectX applications. This class is primarily designed to handle low-level
+            keyboard input manipulation using predefined scan codes and event flags.
             My own question as reference: https://stackoverflow.com/questions/35138778/sending-keys-to-a-directx-game
             http://www.gamespp.com/directx/directInputKeyboardScanCodes.html
             </summary>
     </member>
     <member name="M:RustBuster2016.API.KeyboardAPI.SendKey(RustBuster2016.API.KeyboardAPI.DirectXKeyStrokes,System.Boolean,RustBuster2016.API.KeyboardAPI.InputType)">
       <summary>
-            Sends a directx key.
-            http://www.gamespp.com/directx/directInputKeyboardScanCodes.html
+            Sends a DirectInput key event.
+            For more details on scan codes, visit: http://www.gamespp.com/directx/directInputKeyboardScanCodes.html
             </summary>
-      <param name="key"></param>
-      <param name="KeyUp"></param>
-      <param name="inputType"></param>
+      <param name="key">The DirectX key code to be sent.</param>
+      <param name="KeyUp">Indicates whether the key event is a key-up (true) or key-down (false).</param>
+      <param name="inputType">The type of input event being sent.</param>
     </member>
     <member name="M:RustBuster2016.API.KeyboardAPI.SendKey(System.UInt16,System.Boolean,RustBuster2016.API.KeyboardAPI.InputType)">
       <summary>
-            Sends a directx key.
-            http://www.gamespp.com/directx/directInputKeyboardScanCodes.html
+            Sends a DirectInput key event.
+            For more details on scan codes, visit: http://www.gamespp.com/directx/directInputKeyboardScanCodes.html.
             </summary>
-      <param name="key"></param>
-      <param name="KeyUp"></param>
-      <param name="inputType"></param>
+      <param name="key">The DirectX key code to be sent, representing the scan code of the key.</param>
+      <param name="KeyUp">Indicates whether the key event is a key-up (true) or key-down (false).</param>
+      <param name="inputType">The type of input event, specifying whether the input is a keyboard event, mouse event, or hardware event.</param>
+    </member>
+    <member name="T:RustBuster2016.API.LadderMonoBehaviour">
+      <summary>
+             Base class for ladder objects exposed to RustBuster plugins.
+            
+             Plugin authors attach a class that derives from this MonoBehaviour to any
+             GameObject that should be treated as a climbable ladder by LadderSystem.
+             LadderSystem uses FindObjectsOfType&lt;LadderMonoBehaviour&gt;() to discover
+             all ladder volumes in the loaded scene — no reflection, no name guessing.
+            
+             Minimal usage:
+             <code>
+               public class MyLadder : LadderMonoBehaviour { }
+             </code>
+            
+             You can also override OnLadderEnter / OnLadderExit to react to the player
+             attaching or detaching from this specific ladder.
+             </summary>
+    </member>
+    <member name="M:RustBuster2016.API.LadderMonoBehaviour.OnLadderEnter">
+      <summary>
+            Called by LadderSystem when the local player starts climbing this ladder.
+            Override to add sounds, particles, UI prompts, etc.
+            </summary>
+    </member>
+    <member name="M:RustBuster2016.API.LadderMonoBehaviour.OnLadderExit">
+      <summary>
+            Called by LadderSystem when the local player leaves this ladder.
+            </summary>
+    </member>
+    <member name="T:RustBuster2016.API.LadderState">
+      <summary>
+            Whether the local player is currently on a ladder.
+            </summary>
+    </member>
+    <member name="F:RustBuster2016.API.LadderState.None">
+      <summary>Not touching any ladder.</summary>
+    </member>
+    <member name="F:RustBuster2016.API.LadderState.OnLadder">
+      <summary>Character bounds overlap a ladder collider.</summary>
+    </member>
+    <member name="T:RustBuster2016.API.LadderSystem">
+      <summary>
+             Client-side ladder climbing system.
+            
+             LIFECYCLE
+             ---------
+             Mirrors WaterSystem exactly. The driver only runs while the local player is alive.
+             NotifyAlive is called from Hooks.OnPlayerMove (only reached while
+             HumanController.SendToServer runs, which returns early when dead).
+             The system shuts down on death, respawn, disconnect, and heartbeat timeout.
+            
+             DISCOVERY
+             ---------
+             Plugins register climbable objects by adding a class that derives from
+             LadderMonoBehaviour to the relevant GameObject. LadderSystem discovers them with
+             FindObjectsOfType&lt;LadderMonoBehaviour&gt;(), which Unity restricts to objects that
+             are currently active in a loaded scene. For additional narrowing, only objects
+             that have an active Renderer component (i.e. they are rendered geometry, not
+             invisible triggers) are included in the cached bounds list.
+            
+             MOVEMENT
+             --------
+             CS:GO style: the climb direction is derived from where the camera is pointing.
+               - Camera forward Y &gt; +LookThreshold  → climb up at ClimbSpeed
+               - Camera forward Y &lt; -LookThreshold  → slide down at ClimbSpeed
+               - Otherwise                          → hang in place (vertical vel → 0)
+             Horizontal velocity is left untouched so the player can still push away from
+             the ladder with WASD. When leaving a ladder the CCMotor resumes gravity on its own.
+             </summary>
+    </member>
+    <member name="F:RustBuster2016.API.LadderSystem.Enabled">
+      <summary>Master switch. Set to true from your plugin to activate climbing.</summary>
+    </member>
+    <member name="F:RustBuster2016.API.LadderSystem.ClimbSpeed">
+      <summary>Climb / descend speed in metres per second.</summary>
+    </member>
+    <member name="F:RustBuster2016.API.LadderSystem.LookThreshold">
+      <summary>
+            Camera forward-Y threshold for look-direction climbing.
+            Values in [0, 1]. Default 0.25 ≈ looking ~15° above/below the horizon triggers movement.
+            </summary>
+    </member>
+    <member name="F:RustBuster2016.API.LadderSystem.DetachMargin">
+      <summary>
+            How far the character's centre must be outside a ladder bounds before the player
+            is considered off the ladder. A small positive value prevents chattering at the edge.
+            </summary>
+    </member>
+    <member name="F:RustBuster2016.API.LadderSystem.OverlapPadding">
+      <summary>
+            Extra vertical padding added to the character capsule when testing ladder overlap.
+            Increase if the player pops off before reaching the top.
+            </summary>
+    </member>
+    <member name="F:RustBuster2016.API.LadderSystem.AliveTimeout">
+      <summary>
+            Seconds without a heartbeat before the driver shuts down.
+            Should exceed NetCull.sendInterval (~0.1 s) with a comfortable margin.
+            </summary>
+    </member>
+    <member name="F:RustBuster2016.API.LadderSystem.MaxConsecutiveFailures">
+      <summary>
+            Consecutive tick failures before the system disables itself for the session.
+            Prevents a broken environment from spamming the log every physics step.
+            </summary>
+    </member>
+    <member name="F:RustBuster2016.API.LadderSystem.RebuildInterval">
+      <summary>Seconds between ladder rescans while the list is empty.</summary>
+    </member>
+    <member name="F:RustBuster2016.API.LadderSystem.DebugLog">
+      <summary>Log state changes and rebuild results.</summary>
+    </member>
+    <member name="P:RustBuster2016.API.LadderSystem.State">
+      <summary>Current ladder state of the local player.</summary>
+    </member>
+    <member name="P:RustBuster2016.API.LadderSystem.IsActive">
+      <summary>True while the driver is running (player alive and spawned).</summary>
+    </member>
+    <member name="P:RustBuster2016.API.LadderSystem.IsOnLadder">
+      <summary>True while the player is on a ladder.</summary>
+    </member>
+    <member name="P:RustBuster2016.API.LadderSystem.LadderCount">
+      <summary>How many ladder volumes are cached for this level.</summary>
+    </member>
+    <member name="M:RustBuster2016.API.LadderSystem.RebuildLadders">
+      <summary>
+             Rescans the active scene for LadderMonoBehaviour instances and rebuilds the
+             cached bounds list.
+            
+             FindObjectsOfType&lt;LadderMonoBehaviour&gt;() returns only objects that are
+             currently active (enabled and in a loaded scene). We additionally require a
+             Renderer to exist and be enabled on the GameObject or any of its children so
+             that invisible trigger-only objects are excluded from the bounds cache.
+            
+             Runs automatically on start, on level change, and on a timer while empty.
+             Plugins can also call it after programmatically spawning new ladder objects.
+             </summary>
+    </member>
+    <member name="T:RustBuster2016.API.NetworkViewCache">
+      <summary>
+             Thread-safe cache of every active <see cref="T:NGCView" /> in the current session.
+            
+             Unity's <c>Object.FindObjectsOfType</c> is not thread-safe and is extremely slow
+             on large maps. This cache is updated on the main thread by <see cref="T:RustBuster2016.API.Hooks" />
+             whenever the server instantiates or destroys a networked object (NGC "A"/"D" RPCs),
+             and can be iterated from any thread at near-zero cost.
+            
+             Dictionary is pre-allocated at 50021 slots (prime) — chosen to sit comfortably
+             below the typical maximum entity count in a Rust Legacy session while keeping
+             resize pressure low.
+             </summary>
+    </member>
+    <member name="M:RustBuster2016.API.NetworkViewCache.GetInstance">
+      <summary>
+            Returns the singleton instance.
+            </summary>
+    </member>
+    <member name="M:RustBuster2016.API.NetworkViewCache.Contains(System.Int32)">
+      <summary>
+            Returns <c>true</c> when a view with <paramref name="innerID" /> is cached.
+            </summary>
+    </member>
+    <member name="M:RustBuster2016.API.NetworkViewCache.GetViewByInnerID(System.Int32)">
+      <summary>
+            Looks up a view by its <see cref="F:NGCView.innerID" />.
+            Returns <c>null</c> if not found.
+            </summary>
+      <param name="innerID">The per-group inner identifier of the view.</param>
+    </member>
+    <member name="M:RustBuster2016.API.NetworkViewCache.GetViews">
+      <summary>
+            Returns a shallow snapshot of all currently cached views.
+            Safe to iterate from any thread; the list is a point-in-time copy.
+            </summary>
+    </member>
+    <member name="P:RustBuster2016.API.NetworkViewCache.Count">
+      <summary>
+            Returns how many views are currently cached.
+            </summary>
     </member>
     <member name="T:RustBuster2016.API.AttachFlags">
       <summary>
@@ -2351,6 +2923,73 @@
             Finalizer to ensure unmanaged WinHTTP handles are released if the object is garbage collected without being disposed.
             </summary>
     </member>
+    <member name="T:RustBuster2016.API.RustBusterPlugin">
+      <summary>
+            Represents an abstract base class for creating Rust Buster plugins.
+            </summary>
+      <remarks>
+            Rust Buster plugins are used to extend the functionalities of the Rust Buster framework.
+            Implementors of this class must provide definitions for Initialize and DeInitialize methods.
+            </remarks>
+    </member>
+    <member name="P:RustBuster2016.API.RustBusterPlugin.Name">
+      <summary>
+            Gets the name of the plugin.
+            </summary>
+      <remarks>
+            The default value is "None". This property should be overridden by derived classes
+            to provide a custom name that identifies the plugin.
+            </remarks>
+    </member>
+    <member name="P:RustBuster2016.API.RustBusterPlugin.Version">
+      <summary>
+            Gets the version of the plugin.
+            </summary>
+      <remarks>
+            The version indicates the current version of the Rust Buster plugin.
+            This property is virtual and can be overridden in derived classes to provide
+            a specific version for the implementing plugin.
+            </remarks>
+    </member>
+    <member name="P:RustBuster2016.API.RustBusterPlugin.Author">
+      <summary>
+            Gets the author of the Rust Buster plugin.
+            </summary>
+      <remarks>
+            This property returns the name of the individual or organization
+            credited with the development of the plugin. If not explicitly
+            overridden in a derived class, it defaults to "None".
+            </remarks>
+    </member>
+    <member name="P:RustBuster2016.API.RustBusterPlugin.Order">
+      <summary>
+            Determines the execution order of the plugin within the Rust Buster framework.
+            </summary>
+      <remarks>
+            Plugins with lower <c>Order</c> values are executed before those with higher values.
+            By default, this property returns <see cref="F:System.UInt32.MaxValue" />, which ensures a plugin is executed
+            after all plugins with explicitly defined lower order values.
+            </remarks>
+    </member>
+    <member name="P:RustBuster2016.API.RustBusterPlugin.IsConnectedToAServer">
+      <summary>
+            Indicates whether the client is currently connected to a server.
+            </summary>
+      <remarks>
+            This property returns a boolean value that reflects the connection state of the client.
+            It is useful for determining if the client is actively connected to a server
+            within the Rust Buster framework.
+            </remarks>
+    </member>
+    <member name="P:RustBuster2016.API.RustBusterPlugin.RustBusterVersion">
+      <summary>
+            Gets the current version of Rust Buster being used by the plugin.
+            </summary>
+      <remarks>
+            This property provides the version of the Rust Buster framework that the plugin is compatible with.
+            It retrieves the value set in the API.Hooks.RBVersion constant.
+            </remarks>
+    </member>
     <member name="M:RustBuster2016.API.RustBusterPlugin.SendMessageToServer(System.String)">
       <summary>
             Synchronously sends a message to the server and returns the response payload.
@@ -2365,6 +3004,48 @@
             </summary>
       <param name="msg">The message to send to the server.</param>
       <param name="callback">A callback function that receives a boolean indicating whether an error occurred and the response payload as a string.</param>
+    </member>
+    <member name="M:RustBuster2016.API.RustBusterPlugin.LoadBundle(System.String,System.Int32,System.Action{UnityEngine.AssetBundle})">
+      <summary>
+            Enqueues an asset-bundle load request through the shared, serialised
+            <see cref="T:RustBuster2016.API.AssetBundleLoader" /> queue.  At most one
+            <c>WWW.LoadFromCacheOrDownload</c> call is in flight at any moment.
+            </summary>
+      <param name="path">
+            URL or <c>file://</c> path of the bundle.
+            </param>
+      <param name="version">
+            Cache version.  Pass <c>0</c> to skip the cache and always
+            re-download.
+            </param>
+      <param name="done">
+            Callback invoked on the main Unity thread with the loaded
+            <see cref="T:UnityEngine.AssetBundle" />, or <c>null</c> if loading failed.
+            Always called, even on error.
+            </param>
+    </member>
+    <member name="M:RustBuster2016.API.RustBusterPlugin.DeInitialize">
+      <summary>
+            Exit point for you to device by class. Should Release all resources associated with the plugin and perform cleanup operations.
+            </summary>
+    </member>
+    <member name="M:RustBuster2016.API.RustBusterPlugin.Initialize">
+      <summary>
+            Entry point for initializing the plugin. This method is responsible for performing
+            setup tasks required for the plugin to function properly within the Rust Buster framework.
+            </summary>
+      <remarks>
+            This method should contain logic such as setting up event handlers, initializing resources,
+            or any other configuration steps necessary for the plugin's operation. It must be implemented
+            by derived classes.
+            </remarks>
+    </member>
+    <member name="T:RustBuster2016.API.Stopper">
+      <summary>
+            A utility class for measuring the execution time of code blocks.
+            The <see cref="T:RustBuster2016.API.Stopper" /> implements the <see cref="T:System.IDisposable" /> interface to ensure that
+            the timing operation ends correctly when the object is disposed.
+            </summary>
     </member>
     <member name="F:RustBuster2016.API.Util.UStackable">
       <summary>
@@ -3467,6 +4148,42 @@
             Returns the first zone that contains the specified position.
             Optimized for high-frequency checks where only the first match matters.
             </summary>
+    </member>
+    <member name="T:RustBuster2016.DatablockManager">
+      <summary>
+            Provides functionality for managing custom-registered ItemDataBlock instances,
+            allowing for dynamic modification of item datablocks during runtime.
+            </summary>
+      <remarks>
+            This class is primarily used for extending or modifying the game's datablock behavior
+            without altering the default definitions. It includes utilities for cloning, registering,
+            and unregistering datablocks, as well as clearing all custom datablocks.
+            </remarks>
+    </member>
+    <member name="M:RustBuster2016.DatablockManager.RegisterItem(ItemDataBlock)">
+      <summary>
+            Registers an item datablock into the RustBuster system, adding it to the custom datablocks collection
+            and injecting it into the DatablockDictionary for tracking and reference.
+            </summary>
+      <param name="item">The item datablock to be registered. Must not be null.</param>
+    </member>
+    <member name="M:RustBuster2016.DatablockManager.UnregisterItem(ItemDataBlock)">
+      <summary>
+            Removes a custom datablock from tracking and rebuilds DatablockDictionary arrays and lookup tables.
+            </summary>
+      <param name="item">The item datablock to be unregistered.</param>
+      <returns>True if the item is successfully unregistered; otherwise, false.</returns>
+    </member>
+    <member name="M:RustBuster2016.DatablockManager.Clear">
+      <summary>
+            Unregisters all custom datablocks and clears the custom datablocks collection.
+            </summary>
+    </member>
+    <member name="M:RustBuster2016.DatablockManager.GetAllDatablocks">
+      <summary>
+            Retrieves a shallow copy of all currently registered custom ItemDataBlocks.
+            </summary>
+      <returns>A list containing all custom ItemDataBlock instances registered in the manager.</returns>
     </member>
     <member name="F:RustBuster2016.Loom.MaxThreads">
       <summary>

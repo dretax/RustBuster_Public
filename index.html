@@ -13,15 +13,19 @@
     background:#0b0e12;color:#d7dee1;
     font:17px/1.6 system-ui,"Segoe UI",sans-serif;
   }
-  main{max-width:33rem;margin:0 auto;padding:48px 24px 0}
+  main{max-width:1100px;margin:0 auto;padding:64px 24px 0}
   h1{font:600 1.9rem/1.2 system-ui,sans-serif;margin:0 0 14px;letter-spacing:-.01em;color:#f2f5f6}
-  h2{font:600 1.05rem/1.3 system-ui,sans-serif;margin:44px 0 10px;color:#f2f5f6}
+  h2{font:600 1.2rem/1.3 system-ui,sans-serif;margin:0 0 20px;color:#f2f5f6;display:flex;align-items:center;gap:10px}
+  h2::before{content:"";width:28px;height:3px;background:#58d5f7;border-radius:2px;flex:0 0 auto}
   p{margin:0 0 14px}
   a{color:#58d5f7}
   a:focus-visible{outline:2px solid #58d5f7;outline-offset:2px}
-  ul.links{list-style:none;margin:0;padding:0}
-  ul.links li{margin:0 0 6px}
-  section{border-top:1px solid #23292e;margin-top:44px;padding-top:4px}
+  .links{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px}
+  .links li{margin:0}
+  .links li a{display:block;padding:14px 18px;background:#161b21;border:1px solid #23292e;border-radius:10px;color:#d7dee1;text-decoration:none;font-size:15px;transition:border-color .2s,background .2s,color .2s}
+  .links li a:hover{border-color:#58d5f7;background:#1a2027;color:#58d5f7}
+  section{background:#11151a;border:1px solid #1d2329;border-radius:16px;margin-top:32px;padding:36px 40px}
+  @media (max-width:640px){section{padding:28px 22px}}
   .hero{
     position:relative;overflow:hidden;color:#fff;
     background:radial-gradient(circle at 20% 20%,#2a1f4d 0,#120f22 55%,#0b0e12 100%);
@@ -71,9 +75,24 @@
   button:focus-visible{outline:2px solid #58d5f7;outline-offset:3px}
   button[disabled]{opacity:.5;cursor:default}
   .video-grid{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:16px}
-  .video-grid li{margin:0}
-  .video-grid .video-frame{position:relative;width:100%;padding-top:56.25%;background:#000;border-radius:6px;overflow:hidden}
+  .video-grid li{margin:0;background:#161b21;border:1px solid #23292e;border-radius:12px;padding:12px;transition:border-color .2s}
+  .video-grid li:hover{border-color:#58d5f7}
+  .video-grid .video-frame{position:relative;width:100%;padding-top:56.25%;background:#000;border-radius:8px;overflow:hidden}
   .video-grid .video-frame iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
+  .video-caption{display:block;margin-top:10px;padding:0 2px;font-size:14px;color:#b7c0c4}
+  .eyebrow{text-transform:uppercase;font-size:12px;letter-spacing:.14em;color:#58d5f7;font-weight:600;margin:0 0 10px}
+  .platform-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:20px}
+  .platform-card{position:relative;overflow:hidden;background:#161b21;border:1px solid #23292e;border-radius:14px;padding:30px}
+  .platform-card::before{content:"";position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,#58d5f7,#0e9bec)}
+  .platform-card .badge{display:inline-block;font-size:12px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:#58d5f7;background:rgba(88,213,247,.1);border:1px solid rgba(88,213,247,.3);border-radius:999px;padding:4px 12px;margin-bottom:16px}
+  .platform-card h3{margin:0 0 10px;font:600 1.3rem/1.3 system-ui,sans-serif;color:#f2f5f6}
+  .platform-card p{color:#b7c0c4;margin:0 0 18px}
+  .platform-card a.card-link{font-weight:600;text-decoration:none;color:#58d5f7}
+  .platform-card a.card-link:hover{text-decoration:underline}
+  footer{max-width:1100px;margin:48px auto 0;padding:28px 24px 0;border-top:1px solid #1d2329;color:#8a9499;font-size:14px;display:flex;flex-wrap:wrap;justify-content:space-between;gap:12px}
+  footer a{color:#8a9499;text-decoration:none}
+  footer a:hover{color:#58d5f7}
+  footer .footer-links{display:flex;flex-wrap:wrap;gap:18px}
 </style>
 </head>
 <body>
@@ -91,11 +110,13 @@
     <div class="hero-row">
       <div class="hero-text">
         <h1>RustBuster &amp; Fougerite</h1>
-        <p>For more than a decade &mdash; since 2014 &mdash; RustBuster and Fougerite have been the pioneers of
+        <p>For more than a decade, since 2014, RustBuster and Fougerite have been the pioneers of
         Rust Legacy modding, providing basic anti-cheat protection alongside excellent client and server modding
         opportunities. Both projects are made by DreTaX and are completely free, driving an open-source
         community that others have often drawn ideas from. With our growing ecosystem, we are now more than
         competitive with anything else available for Rust Legacy.</p>
+        <p>Fougerite is the server-side modding platform, while RustBuster is the client-side anti-cheat and
+        modding platform, together forming one complete ecosystem for Rust Legacy.</p>
         <p>The RustBuster client has been transitioned from x86 (32-bit) to a native x64 (64-bit) build, bringing
         better performance, stability and headroom for future features.</p>
         <div class="hero-buttons">
@@ -108,35 +129,62 @@
   </div>
 </div>
 <main>
-  <ul class="links">
-    <li><a href="https://github.com/dretax/RustBuster_Public">github.com/dretax/RustBuster_Public</a></li>
-    <li><a href="https://github.com/dretax/RustBuster_Public/releases">Releases</a></li>
-    <li><a href="https://github.com/dretax/RustBuster_Public/issues">Report an issue</a></li>
-    <li><a href="https://github.com/dretax/RustBuster_Public/blob/master/docs/README.md">RustBuster plugin documentation</a></li>
-    <li><a href="https://github.com/Notulp/Fougerite/blob/master/Docs/README.md">Fougerite plugin documentation</a></li>
-    <li><a href="https://fougerite.com">fougerite.com</a></li>
-    <li><a href="https://discord.gg/n6SngvK">Join us on Discord</a></li>
-  </ul>
+  <section>
+    <p class="eyebrow">The ecosystem</p>
+    <h2>Two platforms, one ecosystem</h2>
+    <div class="platform-grid">
+      <div class="platform-card">
+        <span class="badge">Server-side</span>
+        <h3>Fougerite</h3>
+        <p>The server-side modding platform for Rust Legacy, giving server owners a full plugin API to shape
+        gameplay, build custom game modes and manage their community.</p>
+        <a class="card-link" href="https://github.com/Notulp/Fougerite/blob/master/Docs/README.md" target="_blank" rel="noopener">Read the Fougerite docs</a>
+      </div>
+      <div class="platform-card">
+        <span class="badge">Client-side</span>
+        <h3>RustBuster</h3>
+        <p>The client-side anti-cheat and modding platform, protecting players while opening up deep client
+        customization through plugins, now running on a native x64 build.</p>
+        <a class="card-link" href="https://github.com/dretax/RustBuster_Public/blob/master/docs/README.md" target="_blank" rel="noopener">Read the RustBuster docs</a>
+      </div>
+    </div>
+  </section>
 
   <section>
+    <p class="eyebrow">Resources</p>
+    <h2>Quick links</h2>
+    <ul class="links">
+      <li><a href="https://github.com/dretax/RustBuster_Public" target="_blank" rel="noopener">github.com/dretax/RustBuster_Public</a></li>
+      <li><a href="https://github.com/dretax/RustBuster_Public/releases" target="_blank" rel="noopener">Releases</a></li>
+      <li><a href="https://github.com/dretax/RustBuster_Public/issues" target="_blank" rel="noopener">Report an issue</a></li>
+      <li><a href="https://github.com/dretax/RustBuster_Public/blob/master/docs/README.md" target="_blank" rel="noopener">RustBuster plugin documentation</a></li>
+      <li><a href="https://github.com/Notulp/Fougerite/blob/master/Docs/README.md" target="_blank" rel="noopener">Fougerite plugin documentation</a></li>
+      <li><a href="https://fougerite.com" target="_blank" rel="noopener">fougerite.com</a></li>
+      <li><a href="https://discord.gg/n6SngvK" target="_blank" rel="noopener">Join us on Discord</a></li>
+    </ul>
+  </section>
+
+  <section>
+    <p class="eyebrow">Showcase</p>
     <h2>See what's possible</h2>
 
     <p>A selection of client and server modding showcases built on RustBuster and Fougerite:</p>
 
     <ul class="video-grid">
-      <li><div class="video-frame"><iframe src="https://www.youtube.com/embed/mYtnhMGel-E" title="Showcase 1" loading="lazy" allowfullscreen></iframe></div></li>
-      <li><div class="video-frame"><iframe src="https://www.youtube.com/embed/Xcg0TmRHevk" title="Showcase 2" loading="lazy" allowfullscreen></iframe></div></li>
-      <li><div class="video-frame"><iframe src="https://www.youtube.com/embed/9oQTGlwwsRg" title="Showcase 3" loading="lazy" allowfullscreen></iframe></div></li>
-      <li><div class="video-frame"><iframe src="https://www.youtube.com/embed/rN3W1A7xkss" title="Showcase 4" loading="lazy" allowfullscreen></iframe></div></li>
-      <li><div class="video-frame"><iframe src="https://www.youtube.com/embed/yH-hj2yzNlc" title="Showcase 5" loading="lazy" allowfullscreen></iframe></div></li>
-      <li><div class="video-frame"><iframe src="https://www.youtube.com/embed/4DkixHKl30s" title="Showcase 6" loading="lazy" allowfullscreen></iframe></div></li>
-      <li><div class="video-frame"><iframe src="https://www.youtube.com/embed/KCCcqpQUG-g" title="Showcase 7" loading="lazy" allowfullscreen></iframe></div></li>
-      <li><div class="video-frame"><iframe src="https://www.youtube.com/embed/6jZK7bvo7j4" title="Showcase 8" loading="lazy" allowfullscreen></iframe></div></li>
-      <li><div class="video-frame"><iframe src="https://www.youtube.com/embed/y_nGh6mZ9GQ" title="Showcase 9" loading="lazy" allowfullscreen></iframe></div></li>
+      <li><div class="video-frame"><iframe src="https://www.youtube.com/embed/mYtnhMGel-E" title="Showcase 1" loading="lazy" allowfullscreen></iframe></div><span class="video-caption">Showcase 1</span></li>
+      <li><div class="video-frame"><iframe src="https://www.youtube.com/embed/Xcg0TmRHevk" title="Showcase 2" loading="lazy" allowfullscreen></iframe></div><span class="video-caption">Showcase 2</span></li>
+      <li><div class="video-frame"><iframe src="https://www.youtube.com/embed/9oQTGlwwsRg" title="Showcase 3" loading="lazy" allowfullscreen></iframe></div><span class="video-caption">Showcase 3</span></li>
+      <li><div class="video-frame"><iframe src="https://www.youtube.com/embed/rN3W1A7xkss" title="Showcase 4" loading="lazy" allowfullscreen></iframe></div><span class="video-caption">Showcase 4</span></li>
+      <li><div class="video-frame"><iframe src="https://www.youtube.com/embed/yH-hj2yzNlc" title="Showcase 5" loading="lazy" allowfullscreen></iframe></div><span class="video-caption">Showcase 5</span></li>
+      <li><div class="video-frame"><iframe src="https://www.youtube.com/embed/4DkixHKl30s" title="Showcase 6" loading="lazy" allowfullscreen></iframe></div><span class="video-caption">Showcase 6</span></li>
+      <li><div class="video-frame"><iframe src="https://www.youtube.com/embed/KCCcqpQUG-g" title="Showcase 7" loading="lazy" allowfullscreen></iframe></div><span class="video-caption">Showcase 7</span></li>
+      <li><div class="video-frame"><iframe src="https://www.youtube.com/embed/6jZK7bvo7j4" title="Showcase 8" loading="lazy" allowfullscreen></iframe></div><span class="video-caption">Showcase 8</span></li>
+      <li><div class="video-frame"><iframe src="https://www.youtube.com/embed/y_nGh6mZ9GQ" title="Showcase 9" loading="lazy" allowfullscreen></iframe></div><span class="video-caption">Showcase 9</span></li>
     </ul>
   </section>
 
   <section>
+    <p class="eyebrow">Reliability</p>
     <h2>Clock accuracy</h2>
 
     <p>An inaccurate system clock breaks HTTPS connections and logins. This checks yours.</p>
@@ -158,6 +206,15 @@
     <button id="again" type="button">Check again</button>
   </section>
 </main>
+
+<footer>
+  <span>&copy; 2014&ndash;2026 RustBuster &amp; Fougerite, by DreTaX.</span>
+  <div class="footer-links">
+    <a href="https://fougerite.com" target="_blank" rel="noopener">fougerite.com</a>
+    <a href="https://discord.gg/n6SngvK" target="_blank" rel="noopener">Discord</a>
+    <a href="https://github.com/dretax/RustBuster_Public" target="_blank" rel="noopener">GitHub</a>
+  </div>
+</footer>
 
 <script>
 (function () {

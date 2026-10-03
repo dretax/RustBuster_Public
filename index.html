@@ -10,25 +10,26 @@
   *{box-sizing:border-box}
   body{
     margin:0;padding:0 0 72px;
-    background:#dce3e2;color:#16303a;
+    background:#0b0e12;color:#d7dee1;
     font:17px/1.6 system-ui,"Segoe UI",sans-serif;
   }
   main{max-width:33rem;margin:0 auto;padding:48px 24px 0}
-  h1{font:600 1.9rem/1.2 system-ui,sans-serif;margin:0 0 14px;letter-spacing:-.01em}
-  h2{font:600 1.05rem/1.3 system-ui,sans-serif;margin:44px 0 10px}
+  h1{font:600 1.9rem/1.2 system-ui,sans-serif;margin:0 0 14px;letter-spacing:-.01em;color:#f2f5f6}
+  h2{font:600 1.05rem/1.3 system-ui,sans-serif;margin:44px 0 10px;color:#f2f5f6}
   p{margin:0 0 14px}
-  a{color:#1d6e8c}
-  a:focus-visible{outline:2px solid #1d6e8c;outline-offset:2px}
+  a{color:#58d5f7}
+  a:focus-visible{outline:2px solid #58d5f7;outline-offset:2px}
   ul.links{list-style:none;margin:0;padding:0}
   ul.links li{margin:0 0 6px}
-  section{border-top:1px solid #a8b7b6;margin-top:44px;padding-top:4px}
+  section{border-top:1px solid #23292e;margin-top:44px;padding-top:4px}
   .hero{
     position:relative;overflow:hidden;color:#fff;
-    background:radial-gradient(circle at 20% 20%,#6957f6,#d84763 70%);
+    background:radial-gradient(circle at 20% 20%,#2a1f4d 0,#120f22 55%,#0b0e12 100%);
   }
   .hero::before{
     content:"";position:absolute;inset:0;
-    background:url("assets/images/background.png");background-size:cover;opacity:.5;pointer-events:none;
+    background:url("assets/images/background.png");background-size:cover;opacity:.18;pointer-events:none;
+    mix-blend-mode:screen;
   }
   .hero-inner{position:relative;z-index:1;max-width:1100px;margin:0 auto;padding:32px 24px 56px}
   .hero-nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:36px;flex-wrap:wrap;gap:12px}
@@ -37,10 +38,10 @@
   .hero-nav .hero-links a{color:#fff;text-decoration:none;margin-left:22px;font-weight:500;opacity:.88}
   .hero-nav .hero-links a:first-child{margin-left:0}
   .hero-nav .hero-links a:hover{opacity:1;text-decoration:underline}
-  .hero-row{display:flex;align-items:center;flex-wrap:wrap;gap:32px}
+  .hero-row{display:flex;align-items:center;flex-wrap:wrap;gap:32px;max-width:52rem}
   .hero-text{flex:1 1 340px;min-width:280px}
   .hero-text h1{font:700 2.4rem/1.15 system-ui,sans-serif;margin:0 0 16px;letter-spacing:-.01em;color:#fff}
-  .hero-text p{color:rgba(255,255,255,.92);max-width:46ch;font-size:1.02rem}
+  .hero-text p{color:rgba(255,255,255,.85);max-width:56ch;font-size:1.02rem}
   .hero-buttons{margin-top:22px}
   .hero-buttons a.btn{
     display:inline-block;margin:0 10px 10px 0;padding:12px 22px;border-radius:8px;
@@ -49,32 +50,30 @@
   .hero-buttons a.btn:hover{background:#58d5f7}
   .hero-buttons a.btn.outline{background:transparent;border:1px solid rgba(255,255,255,.6)}
   .hero-buttons a.btn.outline:hover{background:rgba(255,255,255,.14)}
-  .hero-image{flex:0 1 240px;text-align:center}
-  .hero-image img{max-width:230px;width:100%;filter:drop-shadow(0 18px 26px rgba(0,0,0,.35))}
   #status{
-    margin:14px 0 0;padding-left:14px;border-left:3px solid #a8b7b6;
+    margin:14px 0 0;padding-left:14px;border-left:3px solid #23292e;
   }
-  #status.good{border-left-color:#1f6b4a}
-  #status.bad{border-left-color:#a8590e;color:#a8590e}
-  dl{margin:18px 0 0;font-size:15px;border-top:1px solid #a8b7b6}
-  dl div{display:flex;justify-content:space-between;gap:16px;padding:8px 0;border-bottom:1px solid #a8b7b6}
-  dt{color:#587179}
+  #status.good{border-left-color:#2f9e6b}
+  #status.bad{border-left-color:#e08a3d;color:#e08a3d}
+  dl{margin:18px 0 0;font-size:15px;border-top:1px solid #23292e}
+  dl div{display:flex;justify-content:space-between;gap:16px;padding:8px 0;border-bottom:1px solid #23292e}
+  dt{color:#8a9499}
   dd{margin:0;font-family:ui-monospace,monospace;text-align:right}
   ol{display:none;margin:18px 0 0;padding-left:1.4em;font-size:16px}
   ol.show{display:block}
   li{margin:0 0 8px}
-  code{font-family:ui-monospace,monospace;background:#cfd8d7;padding:1px 4px}
+  code{font-family:ui-monospace,monospace;background:#1a2024;padding:1px 4px;color:#d7dee1}
   button{
     margin:22px 0 0;font:500 15px/1 system-ui,sans-serif;
-    color:#dce3e2;background:#16303a;border:1px solid #16303a;padding:10px 16px;cursor:pointer;
+    color:#0b0e12;background:#d7dee1;border:1px solid #d7dee1;padding:10px 16px;cursor:pointer;
   }
-  button:hover{background:#1d6e8c;border-color:#1d6e8c}
-  button:focus-visible{outline:2px solid #1d6e8c;outline-offset:3px}
+  button:hover{background:#58d5f7;border-color:#58d5f7;color:#0b0e12}
+  button:focus-visible{outline:2px solid #58d5f7;outline-offset:3px}
   button[disabled]{opacity:.5;cursor:default}
-  .video-grid{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px}
+  .video-grid{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:16px}
   .video-grid li{margin:0}
-  .video-grid a{display:block;padding:10px 12px;background:#cfd8d7;text-decoration:none;color:#16303a;font-size:15px}
-  .video-grid a:hover{background:#b9c6c5}
+  .video-grid .video-frame{position:relative;width:100%;padding-top:56.25%;background:#000;border-radius:6px;overflow:hidden}
+  .video-grid .video-frame iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
 </style>
 </head>
 <body>
@@ -105,9 +104,6 @@
           <a class="btn outline" href="https://github.com/Notulp/Fougerite/blob/master/Docs/README.md" target="_blank" rel="noopener">Fougerite docs</a>
         </div>
       </div>
-      <div class="hero-image">
-        <img src="assets/images/playerbuster.png" alt="RustBuster">
-      </div>
     </div>
   </div>
 </div>
@@ -128,15 +124,15 @@
     <p>A selection of client and server modding showcases built on RustBuster and Fougerite:</p>
 
     <ul class="video-grid">
-      <li><a href="https://youtu.be/mYtnhMGel-E">Showcase 1</a></li>
-      <li><a href="https://youtu.be/Xcg0TmRHevk">Showcase 2</a></li>
-      <li><a href="https://youtu.be/9oQTGlwwsRg">Showcase 3</a></li>
-      <li><a href="https://youtu.be/rN3W1A7xkss">Showcase 4</a></li>
-      <li><a href="https://youtu.be/yH-hj2yzNlc">Showcase 5</a></li>
-      <li><a href="https://youtu.be/4DkixHKl30s">Showcase 6</a></li>
-      <li><a href="https://youtu.be/KCCcqpQUG-g">Showcase 7</a></li>
-      <li><a href="https://youtu.be/6jZK7bvo7j4">Showcase 8</a></li>
-      <li><a href="https://youtu.be/y_nGh6mZ9GQ">Showcase 9</a></li>
+      <li><div class="video-frame"><iframe src="https://www.youtube.com/embed/mYtnhMGel-E" title="Showcase 1" loading="lazy" allowfullscreen></iframe></div></li>
+      <li><div class="video-frame"><iframe src="https://www.youtube.com/embed/Xcg0TmRHevk" title="Showcase 2" loading="lazy" allowfullscreen></iframe></div></li>
+      <li><div class="video-frame"><iframe src="https://www.youtube.com/embed/9oQTGlwwsRg" title="Showcase 3" loading="lazy" allowfullscreen></iframe></div></li>
+      <li><div class="video-frame"><iframe src="https://www.youtube.com/embed/rN3W1A7xkss" title="Showcase 4" loading="lazy" allowfullscreen></iframe></div></li>
+      <li><div class="video-frame"><iframe src="https://www.youtube.com/embed/yH-hj2yzNlc" title="Showcase 5" loading="lazy" allowfullscreen></iframe></div></li>
+      <li><div class="video-frame"><iframe src="https://www.youtube.com/embed/4DkixHKl30s" title="Showcase 6" loading="lazy" allowfullscreen></iframe></div></li>
+      <li><div class="video-frame"><iframe src="https://www.youtube.com/embed/KCCcqpQUG-g" title="Showcase 7" loading="lazy" allowfullscreen></iframe></div></li>
+      <li><div class="video-frame"><iframe src="https://www.youtube.com/embed/6jZK7bvo7j4" title="Showcase 8" loading="lazy" allowfullscreen></iframe></div></li>
+      <li><div class="video-frame"><iframe src="https://www.youtube.com/embed/y_nGh6mZ9GQ" title="Showcase 9" loading="lazy" allowfullscreen></iframe></div></li>
     </ul>
   </section>
 

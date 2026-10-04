@@ -19,6 +19,8 @@ Fougerite.
   [Writing your first C# client plugin](Guide/Writing-Your-First-Plugin.md) guide.
 - **Looking for a specific class?** See the [Classes](Classes/README.md) reference.
 - **Looking for a specific event/hook?** See the [Hooks](Hooks/README.md) reference.
+- **Looking for default movement/weapon values?** See
+  [Default movement and weapon values](Guide/Default-Movement-And-Weapon-Values.md).
 
 ### Layout
 
@@ -27,6 +29,7 @@ docs/Client/
   README.md                          <- you are here
   Guide/
     Writing-Your-First-Plugin.md     <- step by step beginner tutorial
+    Default-Movement-And-Weapon-Values.md  <- vanilla CCMotor/weapon stat reference
   Classes/
     README.md                        <- index of every documented class
     RustBusterPlugin.md              <- the base class every plugin inherits from

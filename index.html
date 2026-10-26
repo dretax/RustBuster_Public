@@ -93,6 +93,159 @@
   footer a{color:#8a9499;text-decoration:none}
   footer a:hover{color:#58d5f7}
   footer .footer-links{display:flex;flex-wrap:wrap;gap:18px}
+  /* ---------- Install animation ---------- */
+  #install .lede{color:#b7c0c4;max-width:62ch}
+  #install .steam-note{display:flex;align-items:flex-start;gap:12px;margin:6px 0 22px;padding:12px 16px;border-radius:10px;
+    background:rgba(88,213,247,.08);border:1px solid rgba(88,213,247,.3);color:#d7dee1;font-size:15px;max-width:62ch}
+  #install .steam-note svg{flex:0 0 22px;width:22px;height:22px;color:#58d5f7;margin-top:1px}
+  #install .steam-note strong{color:#f2f5f6}
+  #install .stage-frame{position:relative;width:100%;aspect-ratio:960/600;border-radius:12px;overflow:hidden;
+    border:1px solid #23292e;background:#0d1018;box-shadow:0 24px 60px rgba(0,0,0,.45)}
+  #install .stage{position:absolute;left:0;top:0;width:960px;height:600px;transform-origin:0 0;overflow:hidden;
+    font:13px/1.4 "Segoe UI Variable Text","Segoe UI",system-ui,sans-serif;color:#e6e9eb;user-select:none;
+    background:radial-gradient(ellipse at 22% 18%,#3b2a70 0,#1b1538 42%,#0d1018 100%)}
+  #install .stage::before{content:"";position:absolute;inset:0;pointer-events:none;
+    background:radial-gradient(circle at 82% 78%,rgba(14,155,236,.22) 0,transparent 45%)}
+  #install .stage svg{display:block}
+  #install .stage.paused *{animation-play-state:paused!important}
+
+  #install .pill{position:absolute;top:14px;right:14px;z-index:40;padding:6px 12px;border-radius:999px;font-size:12px;font-weight:600;
+    background:rgba(11,14,18,.75);border:1px solid rgba(88,213,247,.4);color:#58d5f7;opacity:0;transform:translateY(-6px);
+    transition:opacity .3s,transform .3s}
+  #install .pill.on{opacity:1;transform:none}
+
+  /* windows */
+  #install .win{position:absolute;background:#1f1f1f;border:1px solid #3a3a3a;border-radius:8px;overflow:hidden;
+    box-shadow:0 20px 50px rgba(0,0,0,.55);opacity:0;visibility:hidden;transform:translateY(12px) scale(.97);
+    transition:opacity .25s,transform .3s cubic-bezier(.2,.8,.2,1),visibility 0s .3s}
+  #install .win.on{opacity:1;visibility:visible;transform:none;transition:opacity .25s,transform .3s cubic-bezier(.2,.8,.2,1),visibility 0s}
+  #install .titlebar{height:34px;display:flex;align-items:center;gap:8px;padding-left:12px;background:#2a2a2a;font-size:12px;color:#ddd}
+  #install .titlebar svg,#install .titlebar img{width:16px;height:16px}
+  #install .titlebar .ctl{margin-left:auto;display:flex;color:#aaa}
+  #install .titlebar .ctl span{width:40px;height:34px;display:grid;place-items:center;font-size:12px}
+
+  #install .explorer{left:56px;top:34px;width:660px;height:452px;z-index:10}
+  #install .addr{height:40px;display:flex;align-items:center;gap:12px;padding:0 10px;background:#232323;border-bottom:1px solid #2f2f2f}
+  #install .addr .navs{color:#7d7d7d;font-size:14px;letter-spacing:8px}
+  #install .addr .path{flex:1;height:26px;border-radius:4px;background:#2d2d2d;display:flex;align-items:center;padding:0 10px;gap:6px;color:#ddd;font-size:12px}
+  #install .addr .path b{font-weight:400;color:#8f8f8f}
+  #install .ex-body{display:flex;height:376px}
+  #install .side{width:150px;padding:10px 6px;border-right:1px solid #2f2f2f;background:#1c1c1c}
+  #install .side div{display:flex;align-items:center;gap:8px;padding:5px 8px;border-radius:4px;color:#c8c8c8;font-size:12px}
+  #install .side svg{width:16px;height:16px}
+  #install .side .cur{background:#2e3a44;color:#fff}
+  #install .files{flex:1;padding:6px 8px;overflow:hidden}
+  #install .fhead,#install .row{display:grid;grid-template-columns:1fr 120px 100px;align-items:center;gap:10px;padding:0 8px;height:24px}
+  #install .fhead{color:#9a9a9a;font-size:12px;border-bottom:1px solid #2f2f2f;margin-bottom:4px;height:28px}
+  #install .row{border:1px solid transparent;border-radius:4px;font-size:12.5px;transition:background .15s,border-color .15s}
+  #install .row .nm{display:flex;align-items:center;gap:8px;white-space:nowrap}
+  #install .row svg,#install .row img{width:16px;height:16px;flex:0 0 16px}
+  #install .row .dt,#install .row .ty{color:#9a9a9a;font-size:12px;white-space:nowrap}
+  #install .row.sel{background:rgba(14,155,236,.22);border-color:rgba(88,213,247,.55)}
+  #install .row.gone{display:none}
+  #install .row.appear{animation:ib-rowin .9s ease}
+  @keyframes ib-rowin{0%{background:rgba(88,213,247,.4)}100%{background:transparent}}
+
+  /* context menu */
+  #install .ctx{position:absolute;z-index:30;width:200px;padding:5px;background:#2b2b2b;border:1px solid #454545;border-radius:8px;
+    box-shadow:0 14px 34px rgba(0,0,0,.5);opacity:0;visibility:hidden;transform:scale(.95);transform-origin:0 0;
+    transition:opacity .15s,transform .15s,visibility 0s .15s}
+  #install .ctx.on{opacity:1;visibility:visible;transform:none;transition:opacity .15s,transform .15s,visibility 0s}
+  #install .ctx div{padding:6px 10px;border-radius:4px;color:#e2e2e2;font-size:12.5px}
+  #install .ctx div.hover{background:#3d454c;color:#fff}
+  #install .ctx hr{border:0;border-top:1px solid #3d3d3d;margin:4px 6px}
+
+  /* extract dialog */
+  #install .dlg{left:250px;top:150px;width:460px;height:236px;z-index:20;background:#202020}
+  #install .dlg .in{padding:16px 20px}
+  #install .dlg h4{margin:0 0 4px;font-size:15px;font-weight:600;color:#fff}
+  #install .dlg p{margin:0;font-size:12px;color:#b5b5b5}
+  #install .dlg .field{height:28px;border:1px solid #474747;border-bottom-color:#58d5f7;border-radius:4px;background:#2b2b2b;padding:0 8px;
+    display:flex;align-items:center;font-size:12px;color:#e2e2e2;margin:8px 0 0}
+  #install .dlg .btns{position:absolute;right:16px;bottom:14px;display:flex;gap:8px}
+  #install .dlg .b{padding:6px 20px;border-radius:4px;background:#3a3a3a;font-size:12px;color:#ddd}
+  #install .dlg .b.pri{background:#0e9bec;color:#fff}
+  #install .dlg .copy{display:none}
+  #install .dlg.copying .dlg-extract{display:none}
+  #install .dlg.copying .pick{display:none}
+  #install .dlg.copying .copy{display:block}
+  #install .bar{height:8px;border-radius:4px;background:#333;overflow:hidden;margin-top:12px}
+  #install .bar i{display:block;height:100%;width:0;background:linear-gradient(90deg,#0e9bec,#58d5f7);transition:width .1s linear}
+  #install .pct{margin-top:8px;font-size:12px;color:#b5b5b5}
+
+  /* launcher */
+  #install .launch{left:424px;top:104px;width:420px;height:300px;z-index:25;background:linear-gradient(165deg,#1e1640 0,#11151a 70%);border-color:#2d3640}
+  #install .launch .titlebar{background:rgba(0,0,0,.25)}
+  #install .launch .head{height:96px;display:flex;align-items:center;justify-content:center;border-bottom:1px solid rgba(255,255,255,.07)}
+  #install .launch .head img{height:52px;max-width:80%}
+  #install .launch .lines{padding:16px 24px}
+  #install .ln{display:flex;align-items:center;gap:12px;padding:5px 0;font-size:13px;color:#8a9499;opacity:.45;transition:opacity .25s,color .25s}
+  #install .ln.busy,#install .ln.ok{opacity:1;color:#e6e9eb}
+  #install .ln .ck{width:18px;height:18px;border-radius:50%;border:2px solid #3b444b;display:grid;place-items:center;font-size:10px;line-height:1;color:transparent}
+  #install .ln.busy .ck{border-color:#58d5f7;border-top-color:transparent;animation:ib-spin .7s linear infinite}
+  #install .ln.ok .ck{border-color:#2f9e6b;background:#2f9e6b;color:#fff}
+  @keyframes ib-spin{to{transform:rotate(360deg)}}
+
+  /* toast */
+  #install .toast{position:absolute;right:12px;bottom:60px;z-index:35;width:300px;padding:12px 14px;border-radius:8px;display:flex;gap:12px;align-items:center;
+    background:#262a2f;border:1px solid #3c444b;box-shadow:0 14px 34px rgba(0,0,0,.5);opacity:0;transform:translateX(24px);transition:opacity .3s,transform .3s}
+  #install .toast.on{opacity:1;transform:none}
+  #install .toast .ic{flex:0 0 36px;height:36px;border-radius:8px;display:grid;place-items:center;background:#1b2838;color:#c7d5e0}
+  #install .toast .ic svg{width:22px;height:22px}
+  #install .toast b{display:block;color:#fff;font-size:13px}
+  #install .toast span{font-size:12px;color:#aab3b8}
+
+  /* taskbar */
+  #install .taskbar{position:absolute;left:0;right:0;bottom:0;height:48px;z-index:15;display:flex;align-items:center;justify-content:center;gap:6px;
+    background:rgba(24,24,30,.9);border-top:1px solid rgba(255,255,255,.06)}
+  #install .tb{position:relative;width:40px;height:40px;border-radius:6px;display:grid;place-items:center;color:#cfd6da;transition:background .2s}
+  #install .tb svg{width:22px;height:22px}
+  #install .tb::after{content:"";position:absolute;bottom:2px;left:50%;width:0;height:3px;border-radius:2px;background:#58d5f7;transform:translateX(-50%);transition:width .25s}
+  #install .tb.running::after{width:14px}
+  #install .tb-steam{color:#c7d5e0}
+  #install .tb .tip{position:absolute;bottom:50px;left:50%;transform:translate(-50%,4px);padding:4px 10px;border-radius:6px;white-space:nowrap;
+    background:#2b2b2b;border:1px solid #454545;font-size:12px;color:#eee;opacity:0;transition:opacity .2s,transform .2s;pointer-events:none}
+  #install .tb.hover{background:rgba(255,255,255,.08)}
+  #install .tb.hover .tip{opacity:1;transform:translate(-50%,0)}
+  #install .launch .head .wordmark{font-size:24px;font-weight:700;letter-spacing:.02em;color:#fff}
+  #install .tb.launching svg{animation:ib-hop .45s ease 2}
+  @keyframes ib-hop{50%{transform:translateY(-5px)}}
+  #install .tray{position:absolute;right:14px;top:0;bottom:0;display:flex;align-items:center;gap:14px;font-size:11px;color:#ddd}
+  #install .tray svg{width:16px;height:16px}
+  #install .steam-tray{position:relative;color:#c7d5e0;opacity:0;transform:scale(.6);transition:opacity .3s,transform .3s}
+  #install .steam-tray::before{content:"";position:absolute;right:-3px;bottom:-2px;width:7px;height:7px;border-radius:50%;background:#2f9e6b;box-shadow:0 0 0 2px rgba(24,24,30,.9)}
+  #install .steam-tray::after{content:"";position:absolute;inset:-7px;border-radius:50%;border:2px solid #58d5f7;opacity:0}
+  #install .stage.steam-on .steam-tray{opacity:1;transform:none}
+  #install .stage.ping .steam-tray::after{animation:ib-ping 1s ease-out 2}
+  @keyframes ib-ping{0%{opacity:.9;transform:scale(.6)}100%{opacity:0;transform:scale(1.5)}}
+  #install .clock{text-align:right;line-height:1.35}
+
+  /* cursor */
+  #install .cursor{position:absolute;left:0;top:0;z-index:60;pointer-events:none;transition-property:transform;
+    transition-timing-function:cubic-bezier(.45,.05,.2,1);will-change:transform}
+  #install .cursor svg{width:24px;height:24px;transform-origin:3px 2px;transition:transform .1s;filter:drop-shadow(0 2px 3px rgba(0,0,0,.5))}
+  #install .cursor.press svg{transform:scale(.8)}
+  #install .ripple{position:absolute;z-index:59;width:34px;height:34px;margin:-17px 0 0 -17px;border-radius:50%;border:2px solid #58d5f7;opacity:0;pointer-events:none}
+  #install .ripple.go{animation:ib-rip .45s ease-out}
+  #install .ripple.alt{border-color:#fff}
+  @keyframes ib-rip{0%{opacity:.95;transform:scale(.3)}100%{opacity:0;transform:scale(1.35)}}
+  #install .fade{position:absolute;inset:0;z-index:70;background:#0d1018;opacity:0;pointer-events:none;transition:opacity .5s}
+  #install .fade.on{opacity:1}
+
+  /* steps under the stage */
+  #install .isteps{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px;margin-top:16px}
+  #install .istep{display:flex;gap:12px;padding:14px 16px;background:#161b21;border:1px solid #23292e;border-radius:10px;transition:border-color .3s,background .3s}
+  #install .istep .n{flex:0 0 28px;height:28px;border-radius:50%;display:grid;place-items:center;font-weight:600;font-size:14px;
+    background:#1f262d;color:#8a9499;transition:background .3s,color .3s}
+  #install .istep strong{display:block;color:#f2f5f6;font-size:15px;margin-bottom:2px}
+  #install .istep .d{display:block;font-size:14px;line-height:1.5;color:#9aa3a8}
+  #install .istep.active{border-color:#58d5f7;background:#18202a}
+  #install .istep.active .n{background:#58d5f7;color:#0b0e12}
+  #install .istep.done .n{background:#2f9e6b;color:#fff}
+  #install .demo-ctl{display:flex;flex-wrap:wrap;gap:10px;margin-top:16px}
+  #install .demo-ctl button{margin:0;border-radius:8px;padding:10px 18px}
+  #install .demo-ctl button.ghost{background:transparent;color:#d7dee1;border-color:#3a434a}
+  #install .demo-ctl button.ghost:hover{border-color:#58d5f7;color:#58d5f7;background:transparent}
 </style>
 </head>
 <body>
@@ -121,6 +274,7 @@
         better performance, stability and headroom for future features.</p>
         <div class="hero-buttons">
           <a class="btn" href="https://github.com/dretax/RustBuster_Public/releases" target="_blank" rel="noopener">Download</a>
+          <a class="btn outline" href="#install">How to install</a>
           <a class="btn outline" href="https://github.com/dretax/RustBuster_Public/blob/master/docs/README.md" target="_blank" rel="noopener">RustBuster docs</a>
           <a class="btn outline" href="https://github.com/Notulp/Fougerite/blob/master/Docs/README.md" target="_blank" rel="noopener">Fougerite docs</a>
         </div>
@@ -129,6 +283,151 @@
   </div>
 </div>
 <main>
+  <section id="install">
+    <p class="eyebrow">Getting started</p>
+    <h2>Install in under a minute</h2>
+    <p class="lede">Download the latest release, extract the zip anywhere you like and start the launcher from the new folder.</p>
+
+    <p class="steam-note">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 7v6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/><circle cx="12" cy="16.6" r="1.3" fill="currentColor"/></svg>
+      <span><strong>Start Steam first and keep it running.</strong> RustBuster needs Steam open in the background to launch the game.</span>
+    </p>
+
+    <div class="stage-frame">
+      <div class="stage" role="img" aria-label="Animation: open Steam and leave it running, right-click RustBuster.zip in your Downloads folder and choose Extract All, open the new RustBuster folder, then double-click RustBusterLauncher.exe.">
+        <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+          <defs>
+            <symbol id="ib-folder" viewBox="0 0 24 24"><path d="M2 6.5A1.5 1.5 0 0 1 3.5 5h5.2l2 2h9.8A1.5 1.5 0 0 1 22 8.5v10a1.5 1.5 0 0 1-1.5 1.5h-17A1.5 1.5 0 0 1 2 18.5z" fill="#e3a334"/><path d="M2 9.5h20v9a1.5 1.5 0 0 1-1.5 1.5h-17A1.5 1.5 0 0 1 2 18.5z" fill="#f7c95c"/></symbol>
+            <symbol id="ib-zip" viewBox="0 0 24 24"><path d="M2 6.5A1.5 1.5 0 0 1 3.5 5h5.2l2 2h9.8A1.5 1.5 0 0 1 22 8.5v10a1.5 1.5 0 0 1-1.5 1.5h-17A1.5 1.5 0 0 1 2 18.5z" fill="#e3a334"/><path d="M2 9.5h20v9a1.5 1.5 0 0 1-1.5 1.5h-17A1.5 1.5 0 0 1 2 18.5z" fill="#f7c95c"/><path d="M12 9.5v10.5" stroke="#5b4a1c" stroke-width="2" stroke-dasharray="1.4 1.2"/><rect x="10.5" y="13" width="3" height="3.4" rx=".7" fill="#5b4a1c"/></symbol>
+            <symbol id="ib-file" viewBox="0 0 24 24"><path d="M6 2.5h8l5 5v13a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1v-17a1 1 0 0 1 1-1z" fill="#e9edf0"/><path d="M14 2.5v5h5z" fill="#b9c1c6"/></symbol>
+            <symbol id="ib-dll" viewBox="0 0 24 24"><path d="M6 2.5h8l5 5v13a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1v-17a1 1 0 0 1 1-1z" fill="#e9edf0"/><path d="M14 2.5v5h5z" fill="#b9c1c6"/><circle cx="12" cy="15" r="3" fill="none" stroke="#6f7a80" stroke-width="1.8"/></symbol>
+            <symbol id="ib-exe" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2" fill="#2d6fb5"/><path d="M3 6a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v2H3z" fill="#58d5f7"/><rect x="6" y="11" width="12" height="6" rx="1" fill="#e9edf0" opacity=".85"/></symbol>
+            <symbol id="ib-pad" viewBox="0 0 24 24"><path d="M7 7h10a5 5 0 0 1 4.8 6.4l-1.3 4.3a2.2 2.2 0 0 1-3.7.9L14.5 16h-5l-2.3 2.6a2.2 2.2 0 0 1-3.7-.9l-1.3-4.3A5 5 0 0 1 7 7z" fill="currentColor"/><path d="M8 10.2v3.6M6.2 12h3.6" stroke="#141a22" stroke-width="1.6" stroke-linecap="round"/><circle cx="16" cy="11" r="1.1" fill="#141a22"/><circle cx="17.6" cy="13.4" r="1.1" fill="#141a22"/></symbol>
+            <symbol id="ib-search" viewBox="0 0 24 24"><circle cx="10.5" cy="10.5" r="6" fill="none" stroke="currentColor" stroke-width="2"/><path d="M15 15l5 5" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></symbol>
+            <symbol id="ib-pc" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="12" rx="1.5" fill="#4a90d9"/><rect x="5" y="6" width="14" height="8" fill="#9fd3f7"/><path d="M8 20h8M12 16v4" stroke="#c8ced2" stroke-width="2" stroke-linecap="round"/></symbol>
+            <symbol id="ib-dl" viewBox="0 0 24 24"><path d="M12 3v12m0 0l-5-5m5 5l5-5M4 20h16" fill="none" stroke="#58d5f7" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+            <symbol id="ib-wifi" viewBox="0 0 24 24"><path d="M2.5 9a14 14 0 0 1 19 0M5.8 12.5a9 9 0 0 1 12.4 0M9.2 16a4 4 0 0 1 5.6 0" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="12" cy="19.3" r="1.4" fill="currentColor"/></symbol>
+          </defs>
+        </svg>
+
+        <div class="pill"></div>
+
+        <!-- File Explorer -->
+        <div class="win explorer">
+          <div class="titlebar"><svg><use href="#ib-folder"/></svg><span class="ex-title">Downloads</span><div class="ctl"><span>&#8212;</span><span>&#9633;</span><span>&#10005;</span></div></div>
+          <div class="addr"><span class="navs">&#8592;&#8594;&#8593;</span><div class="path"></div></div>
+          <div class="ex-body">
+            <div class="side">
+              <div><svg><use href="#ib-folder"/></svg>Desktop</div>
+              <div class="cur"><svg><use href="#ib-dl"/></svg>Downloads</div>
+              <div><svg><use href="#ib-folder"/></svg>Documents</div>
+              <div><svg><use href="#ib-folder"/></svg>Pictures</div>
+              <div><svg><use href="#ib-pc"/></svg>This PC</div>
+            </div>
+            <div class="files">
+              <div class="fhead"><span>Name</span><span>Date modified</span><span>Type</span></div>
+              <div class="list" data-view="downloads">
+                <div class="row gone" data-row="folder"><span class="nm"><svg><use href="#ib-folder"/></svg>RustBuster</span><span class="dt">10/26/2026 18:02</span><span class="ty">File folder</span></div>
+                <div class="row"><span class="nm"><svg><use href="#ib-folder"/></svg>Screenshots</span><span class="dt">10/12/2026 21:04</span><span class="ty">File folder</span></div>
+                <div class="row"><span class="nm"><svg><use href="#ib-folder"/></svg>Wallpapers</span><span class="dt">08/30/2026 11:17</span><span class="ty">File folder</span></div>
+                <div class="row" data-row="zip"><span class="nm"><svg><use href="#ib-zip"/></svg>RustBuster.zip</span><span class="dt">10/26/2026 18:01</span><span class="ty">Zip archive</span></div>
+              </div>
+              <div class="list" data-view="contents" hidden>
+                <div class="row"><span class="nm"><svg><use href="#ib-folder"/></svg>_CommonRedist</span><span class="dt">03/28/2018 20:48</span><span class="ty">File folder</span></div>
+                <div class="row"><span class="nm"><svg><use href="#ib-folder"/></svg>bundles</span><span class="dt">03/28/2018 20:48</span><span class="ty">File folder</span></div>
+                <div class="row"><span class="nm"><svg><use href="#ib-folder"/></svg>cfg</span><span class="dt">03/28/2018 20:48</span><span class="ty">File folder</span></div>
+                <div class="row"><span class="nm"><svg><use href="#ib-folder"/></svg>drivers</span><span class="dt">10/23/2026 16:30</span><span class="ty">File folder</span></div>
+                <div class="row"><span class="nm"><svg><use href="#ib-folder"/></svg>RB_Data</span><span class="dt">10/23/2026 18:15</span><span class="ty">File folder</span></div>
+                <div class="row"><span class="nm"><svg><use href="#ib-folder"/></svg>RB_Logs</span><span class="dt">10/24/2026 09:44</span><span class="ty">File folder</span></div>
+                <div class="row"><span class="nm"><svg><use href="#ib-folder"/></svg>rust_Data</span><span class="dt">10/24/2026 09:44</span><span class="ty">File folder</span></div>
+                <div class="row"><span class="nm"><svg><use href="#ib-exe"/></svg>rust.exe</span><span class="dt">10/23/2026 16:30</span><span class="ty">Application</span></div>
+                <div class="row"><span class="nm"><svg><use href="#ib-file"/></svg>RustBuster.json</span><span class="dt">09/27/2026 00:36</span><span class="ty">JSON file</span></div>
+                <div class="row"><span class="nm"><svg><use href="#ib-exe"/></svg>RustBusterHelper.exe</span><span class="dt">10/23/2026 16:30</span><span class="ty">Application</span></div>
+                <div class="row" data-row="launcher"><span class="nm"><img src="assets/images/faviconbuster.png" alt="">RustBusterLauncher.exe</span><span class="dt">09/23/2026 23:27</span><span class="ty">Application</span></div>
+                <div class="row"><span class="nm"><svg><use href="#ib-dll"/></svg>steam_api64.dll</span><span class="dt">10/23/2026 16:30</span><span class="ty">Extension</span></div>
+                <div class="row"><span class="nm"><svg><use href="#ib-file"/></svg>version.txt</span><span class="dt">10/23/2026 16:30</span><span class="ty">Text file</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right-click menu -->
+        <div class="ctx">
+          <div>Open</div>
+          <div class="ctx-extract">Extract All&#8230;</div>
+          <hr>
+          <div>Copy</div>
+          <div>Rename</div>
+          <div>Delete</div>
+        </div>
+
+        <!-- Extract dialog -->
+        <div class="win dlg">
+          <div class="titlebar"><svg><use href="#ib-zip"/></svg>Extract Compressed (Zipped) Folders<div class="ctl"><span>&#10005;</span></div></div>
+          <div class="in">
+            <div class="pick">
+              <h4>Select a destination and extract files</h4>
+              <p>Files will be extracted to this folder:</p>
+              <div class="field">C:\Users\You\Downloads\RustBuster</div>
+            </div>
+            <div class="copy">
+              <h4>Extracting RustBuster.zip</h4>
+              <p>Copying files to Downloads\RustBuster</p>
+              <div class="bar"><i class="dlg-bar"></i></div>
+              <div class="pct">0% complete</div>
+            </div>
+          </div>
+          <div class="btns"><span class="b pri dlg-extract">Extract</span><span class="b">Cancel</span></div>
+        </div>
+
+        <!-- RustBuster launcher -->
+        <div class="win launch">
+          <div class="titlebar"><img src="assets/images/faviconbuster.png" alt="">RustBuster Launcher<div class="ctl"><span>&#8212;</span><span>&#10005;</span></div></div>
+          <div class="head"><img src="assets/images/logo.png" alt="" onerror="this.outerHTML='&lt;span class=&quot;wordmark&quot;&gt;RustBuster&lt;/span&gt;'"></div>
+          <div class="lines">
+            <div class="ln"><span class="ck">&#10003;</span>Steam is running</div>
+            <div class="ln"><span class="ck">&#10003;</span>Files verified</div>
+            <div class="ln"><span class="ck">&#10003;</span>Starting Rust Legacy</div>
+            <div class="bar"><i class="launch-bar"></i></div>
+          </div>
+        </div>
+
+        <!-- Notification -->
+        <div class="toast">
+          <div class="ic"><svg><use href="#ib-pad"/></svg></div>
+          <div><b>Steam is running</b><span>Leave it open in the background while you play.</span></div>
+        </div>
+
+        <!-- Taskbar -->
+        <div class="taskbar">
+          <div class="tb"><svg><use href="#ib-search"/></svg></div>
+          <div class="tb tb-explorer"><svg><use href="#ib-folder"/></svg></div>
+          <div class="tb tb-steam"><svg><use href="#ib-pad"/></svg><span class="tip">Steam</span></div>
+          <div class="tray">
+            <span class="steam-tray"><svg><use href="#ib-pad"/></svg></span>
+            <svg><use href="#ib-wifi"/></svg>
+            <div class="clock">18:01<br>10/26/2026</div>
+          </div>
+        </div>
+
+        <div class="ripple"></div>
+        <div class="cursor"><svg viewBox="0 0 24 24"><path d="M3 2l15 9-6.4 1.4 3.7 7-2.7 1.4-3.7-7L3 18.6z" fill="#fff" stroke="#111" stroke-width="1.3" stroke-linejoin="round"/></svg></div>
+        <div class="fade on"></div>
+      </div>
+    </div>
+
+    <div class="isteps">
+      <div class="istep"><span class="n">1</span><div><strong>Start Steam</strong><span class="d">Log in and leave Steam running in the background while you play.</span></div></div>
+      <div class="istep"><span class="n">2</span><div><strong>Extract the zip</strong><span class="d">Right-click RustBuster.zip, choose Extract All, then open the new folder.</span></div></div>
+      <div class="istep"><span class="n">3</span><div><strong>Run the launcher</strong><span class="d">Double-click RustBusterLauncher.exe to start the game.</span></div></div>
+    </div>
+
+    <div class="demo-ctl">
+      <button type="button" data-act="play">Pause</button>
+      <button type="button" class="ghost" data-act="replay">Replay</button>
+    </div>
+  </section>
+
   <section>
     <p class="eyebrow">The ecosystem</p>
     <h2>Two platforms, one ecosystem</h2>
@@ -283,6 +582,296 @@
 
   $("again").addEventListener("click", check);
   check();
+})();
+</script>
+<script>
+(function () {
+  "use strict";
+
+  var root = document.getElementById("install");
+  if (!root) return;
+
+  var frame = root.querySelector(".stage-frame");
+  var stage = root.querySelector(".stage");
+  var q = function (s) { return stage.querySelector(s); };
+  var qa = function (s) { return Array.prototype.slice.call(stage.querySelectorAll(s)); };
+
+  var cursor = q(".cursor"), ripple = q(".ripple"), pill = q(".pill"), fade = q(".fade");
+  var explorer = q(".explorer"), menu = q(".ctx"), dialog = q(".dlg"), launch = q(".launch"), toast = q(".toast");
+  var tbSteam = q(".tb-steam"), tbExplorer = q(".tb-explorer");
+  var dlgBar = q(".dlg-bar"), launchBar = q(".launch-bar"), pct = q(".pct");
+  var steps = Array.prototype.slice.call(root.querySelectorAll(".istep"));
+  var playBtn = root.querySelector('[data-act="play"]');
+  var replayBtn = root.querySelector('[data-act="replay"]');
+
+  /* Scale the fixed 960x600 scene to the frame, like a video. */
+  function fit() { stage.style.transform = "scale(" + frame.clientWidth / 960 + ")"; }
+  fit();
+  if ("ResizeObserver" in window) new ResizeObserver(fit).observe(frame);
+  else window.addEventListener("resize", fit);
+
+  /* Timing: waits stop counting while paused, offscreen or in a hidden tab. */
+  var token = 0, running = false, userPaused = false, offscreen = true;
+  function paused() { return userPaused || offscreen || document.hidden; }
+
+  function wait(ms) {
+    var t = token;
+    return new Promise(function (resolve, reject) {
+      var left = ms, last = performance.now();
+      function tick(now) {
+        if (t !== token) return reject(new Error("stopped"));
+        if (!paused()) left -= Math.min(now - last, 100);
+        last = now;
+        if (left <= 0) resolve(); else requestAnimationFrame(tick);
+      }
+      requestAnimationFrame(tick);
+    });
+  }
+
+  /* Cursor helpers, all in unscaled scene coordinates. */
+  var cx = 620, cy = 380;
+  function centre(el) {
+    var x = 0, y = 0, n = el;
+    while (n && n !== stage) { x += n.offsetLeft; y += n.offsetTop; n = n.offsetParent; }
+    return { x: x + el.offsetWidth / 2, y: y + el.offsetHeight / 2 };
+  }
+  function place(x, y, ms) {
+    cx = x; cy = y;
+    cursor.style.transitionDuration = (ms || 0) + "ms";
+    cursor.style.transform = "translate(" + (x - 3) + "px," + (y - 2) + "px)";
+  }
+  function move(el, ms, dx, dy) {
+    var p = centre(el);
+    place(p.x + (dx || 0), p.y + (dy || 0), ms);
+    return wait(ms + 60);
+  }
+  function click(alt) {
+    ripple.className = "ripple";
+    ripple.style.left = cx + "px";
+    ripple.style.top = cy + "px";
+    void ripple.offsetWidth;
+    ripple.className = "ripple go" + (alt ? " alt" : "");
+    cursor.classList.add("press");
+    return wait(130).then(function () {
+      cursor.classList.remove("press");
+      return wait(110);
+    });
+  }
+  function dbl() { return click().then(function () { return click(); }); }
+
+  /* Scene helpers. */
+  function on(el) { el.classList.add("on"); }
+  function off(el) { el.classList.remove("on"); }
+  function select(row) {
+    qa(".row").forEach(function (r) { r.classList.remove("sel"); });
+    if (row) row.classList.add("sel");
+  }
+  function view(name) {
+    qa(".list").forEach(function (l) { l.hidden = l.getAttribute("data-view") !== name; });
+    var inside = name === "contents";
+    q(".ex-title").textContent = inside ? "RustBuster" : "Downloads";
+    q(".path").innerHTML = "<b>This PC</b><b>&#8250;</b>Downloads" + (inside ? "<b>&#8250;</b>RustBuster" : "");
+  }
+  var labels = ["", "Start Steam", "Extract the zip", "Run the launcher"];
+  function setStep(n) {
+    steps.forEach(function (s, i) {
+      s.classList.toggle("active", i + 1 === n);
+      s.classList.toggle("done", i + 1 < n);
+    });
+    pill.textContent = n > 3 ? "Ready to play" : n ? "Step " + n + " of 3: " + labels[n] : "";
+    pill.classList.toggle("on", n > 0);
+  }
+  function bar(el, value) {
+    el.style.transition = "none";
+    el.style.width = value + "%";
+    void el.offsetWidth;
+    el.style.transition = "";
+  }
+  async function fill(el, ms, label) {
+    for (var i = 1; i <= 20; i++) {
+      await wait(ms / 20);
+      el.style.width = i * 5 + "%";
+      if (label) label.textContent = i * 5 + "% complete";
+    }
+  }
+
+  function reset() {
+    [explorer, menu, dialog, launch, toast].forEach(off);
+    stage.classList.remove("steam-on", "ping");
+    tbSteam.classList.remove("running", "launching", "hover");
+    tbExplorer.classList.remove("running");
+    dialog.classList.remove("copying");
+    bar(dlgBar, 0); bar(launchBar, 0);
+    pct.textContent = "0% complete";
+    qa(".ln").forEach(function (l) { l.className = "ln"; });
+    var folder = q('[data-row="folder"]');
+    folder.classList.add("gone");
+    folder.classList.remove("appear");
+    q(".ctx-extract").classList.remove("hover");
+    select(null);
+    view("downloads");
+    setStep(0);
+    place(620, 380, 0);
+  }
+
+  async function sequence() {
+    reset();
+    await wait(80);
+    off(fade);
+    await wait(700);
+
+    /* 1. Start Steam */
+    setStep(1);
+    await move(tbSteam, 1100);
+    tbSteam.classList.add("hover");
+    await wait(500);
+    await click();
+    tbSteam.classList.remove("hover");
+    tbSteam.classList.add("launching");
+    await wait(900);
+    tbSteam.classList.remove("launching");
+    tbSteam.classList.add("running");
+    stage.classList.add("steam-on");
+    on(toast);
+    await wait(2600);
+    off(toast);
+    await wait(400);
+
+    /* 2. Extract the zip */
+    setStep(2);
+    await move(tbExplorer, 900);
+    await click();
+    tbExplorer.classList.add("running");
+    on(explorer);
+    await wait(700);
+
+    var zip = q('[data-row="zip"]');
+    await move(zip, 900, -150, 0);
+    await click();
+    select(zip);
+    await wait(350);
+    await click(true);
+    menu.style.left = cx + 4 + "px";
+    menu.style.top = cy + 4 + "px";
+    on(menu);
+    await wait(500);
+
+    var item = q(".ctx-extract");
+    await move(item, 450, -40, 0);
+    item.classList.add("hover");
+    await wait(350);
+    await click();
+    off(menu);
+    await wait(150);
+    on(dialog);
+    await wait(900);
+
+    await move(q(".dlg-extract"), 700);
+    await click();
+    dialog.classList.add("copying");
+    await fill(dlgBar, 1800, pct);
+    await wait(350);
+    off(dialog);
+    await wait(300);
+
+    var folder = q('[data-row="folder"]');
+    folder.classList.remove("gone");
+    folder.classList.add("appear");
+    await wait(900);
+    await move(folder, 700, -150, 0);
+    select(folder);
+    await dbl();
+    await wait(250);
+    view("contents");
+    select(null);
+    await wait(700);
+
+    /* 3. Run the launcher */
+    setStep(3);
+    var launcherRow = q('[data-row="launcher"]');
+    await move(launcherRow, 1000, -110, 0);
+    select(launcherRow);
+    await wait(400);
+    await dbl();
+    await wait(350);
+    on(launch);
+    await wait(600);
+
+    var lines = qa(".ln");
+    lines[0].className = "ln busy";
+    stage.classList.add("ping");
+    await wait(800);
+    lines[0].className = "ln ok";
+    lines[1].className = "ln busy";
+    await wait(1000);
+    lines[1].className = "ln ok";
+    lines[2].className = "ln busy";
+    await fill(launchBar, 1600);
+    lines[2].className = "ln ok";
+    setStep(4);
+    await wait(2800);
+
+    on(fade);
+    await wait(600);
+  }
+
+  async function loop() {
+    try { for (;;) await sequence(); } catch (e) { /* stopped by a restart */ }
+  }
+
+  function start() {
+    token++;
+    running = true;
+    userPaused = false;
+    loop();
+    sync();
+  }
+
+  /* Static end frame for people who prefer reduced motion. */
+  function still() {
+    token++;
+    running = false;
+    reset();
+    stage.classList.add("steam-on");
+    tbSteam.classList.add("running");
+    tbExplorer.classList.add("running");
+    on(explorer);
+    view("contents");
+    var row = q('[data-row="launcher"]');
+    select(row);
+    var p = centre(row);
+    place(p.x - 110, p.y, 0);
+    on(launch);
+    qa(".ln").forEach(function (l) { l.className = "ln ok"; });
+    bar(launchBar, 100);
+    setStep(4);
+    off(fade);
+    sync();
+  }
+
+  function sync() {
+    playBtn.textContent = !running ? "Play animation" : userPaused ? "Play" : "Pause";
+    stage.classList.toggle("paused", running && paused());
+  }
+
+  playBtn.addEventListener("click", function () {
+    if (!running) start();
+    else { userPaused = !userPaused; sync(); }
+  });
+  replayBtn.addEventListener("click", start);
+
+  if ("IntersectionObserver" in window) {
+    new IntersectionObserver(function (entries) {
+      offscreen = !entries[0].isIntersecting;
+      sync();
+    }, { threshold: 0.25 }).observe(frame);
+  } else {
+    offscreen = false;
+  }
+  document.addEventListener("visibilitychange", sync);
+
+  var reduced = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  if (reduced) still(); else start();
 })();
 </script>
 </body>

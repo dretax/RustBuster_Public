@@ -22,6 +22,13 @@
              The queue is started automatically on first use and runs on the same
              <see cref="T:RustBuster2016.Loom" /> MonoBehaviour that the rest of the codebase uses for
              main-thread coroutines.  No plugin needs to manage the runner lifecycle.
+             </para><para><b>Relationship to <c>Facepunch.Bundling</c>.</b>  This loader only
+             deals with *downloading* bundles over <c>WWW</c>; it has no connection
+             to the game's own asset registry.  The game itself keeps every asset
+             it has ever loaded from a bundle inside the internal, static
+             <c>Facepunch.Bundling</c> class (see <see cref="M:RustBuster2016.API.AssetBundleLoader.InjectIntoFacepunchBundling(UnityEngine.AssetBundle,System.Type)" />
+             for details and for how a bundle obtained via <see cref="M:RustBuster2016.API.AssetBundleLoader.LoadBundle(System.String,System.Int32,System.Action{UnityEngine.AssetBundle})" />
+             can be merged into that registry).
              </para></summary>
     </member>
     <member name="M:RustBuster2016.API.AssetBundleLoader.LoadBundle(System.String,System.Int32,System.Action{UnityEngine.AssetBundle})">
@@ -57,6 +64,69 @@
             Returns the number of bundle requests that are currently waiting in
             the queue (not counting the one actively loading, if any).
             </summary>
+    </member>
+    <member name="M:RustBuster2016.API.AssetBundleLoader.InjectIntoFacepunchBundling(UnityEngine.AssetBundle,System.Type)">
+      <summary>
+             Merges an already-loaded <see cref="T:UnityEngine.AssetBundle" /> into the game's
+             own <c>Facepunch.Bundling</c> asset registry, so that
+             <c>Facepunch.Bundling.Load</c>/<c>LoadAll</c> (and therefore every
+             game system built on top of them, e.g. item/datablock lookup) can
+             see assets coming from <paramref name="bundle" /> exactly as if it
+             had been shipped with the game.
+            
+             <para><c>Facepunch.Bundling</c> is the single place the client resolves
+             every bundled asset through (<c>Load</c>/<c>LoadAll</c> for
+             prefabs, <c>ItemDataBlock</c>s, <c>LootSpawnList</c>s, textures,
+             etc. — see the existing calls to
+             <c>Facepunch.Bundling.LoadAll&lt;ItemDataBlock&gt;()</c> in
+             <c>Hooks.cs</c>). Internally it stores everything in a private,
+             static <c>LoadedBundleMap</c> that is built exactly once, when the
+             game finishes streaming its own numbered bundles (e.g.
+             <c>gameobject.00X</c>, <c>texture.00X</c>) through
+             <c>Facepunch.Load.Loader</c>. A bundle whose name/manifest entry
+             matches the pattern the loader expects gets folded into the exact
+             same registry automatically.
+             </para><para><b>Why reflection is required here.</b><c>Bundling</c> does not
+             expose any public API to register a bundle after the fact — the
+             map is only ever populated from inside the loader's boot sequence.
+             This method reaches into the private <c>Map</c>/<c>Assets</c>
+             structures (documented in the decompiled <c>Bundling</c> source)
+             to append <paramref name="bundle" /> to the list of bundles backing
+             <paramref name="assetType" />, which is the same storage the loader
+             itself writes to. No part of the game's own bundle manifest is
+             touched; only the live, in-memory lookup tables are extended.
+             </para><para><b>Precedence / overriding caveat.</b>  Lookups are cached by path
+             per asset-type bucket, and the first bundle (in registration order)
+             that <c>Contains(path)</c> a given path wins. Injecting after the
+             game's own bundles means genuinely new paths are always resolved,
+             but a path that collides with one already shipped by the game will
+             still resolve to the game's original asset unless that path was
+             never looked up before (the "not found" result is cached too,
+             which is why this method clears the relevant path cache after
+             inserting).
+             </para><para><b>Known limitation.</b> The real per-asset <c>Facepunch.Load.Item</c>
+             metadata (content type, declared asset type, etc.) is not
+             reconstructed for the injected entry — <c>null</c> is stored in its
+             place. Only <c>Load</c>/<c>LoadAll</c>/<c>Contains</c> lookups (the
+             documented, exercised code paths) are guaranteed to work; any game
+             code that reads that per-bundle metadata back out is not supported.
+             </para></summary>
+      <param name="bundle">
+             A fully loaded bundle, e.g. the one handed to the callback passed
+             to <see cref="M:RustBuster2016.API.AssetBundleLoader.LoadBundle(System.String,System.Int32,System.Action{UnityEngine.AssetBundle})" />.
+             </param>
+      <param name="assetType">
+             The asset type the bundle should be registered under (the same
+             type you intend to pass to <c>Facepunch.Bundling.Load&lt;T&gt;</c>
+             afterwards, e.g. <c>typeof(GameObject)</c> or
+             <c>typeof(ItemDataBlock)</c>).
+             </param>
+      <returns>
+        <c>true</c> if the bundle was merged into the registry;
+             <c>false</c> if <c>Facepunch.Bundling</c> has not finished loading
+             yet, or the internal layout could not be reached (e.g. it changed
+             between game versions).
+             </returns>
     </member>
     <member name="T:RustBuster2016.API.Concurrent.ConcurrentDictionary`2">
       <summary>
@@ -356,6 +426,249 @@
             You should read the microsoft docs on how a ReaderWriterLock works.
             </summary>
     </member>
+    <member name="T:RustBuster2016.API.CustomMapState">
+      <summary>
+            Where the custom map of the current join is in its lifecycle.
+            </summary>
+    </member>
+    <member name="F:RustBuster2016.API.CustomMapState.None">
+      <summary>No plugin has claimed the map. The server's level loads as usual.</summary>
+    </member>
+    <member name="F:RustBuster2016.API.CustomMapState.Pending">
+      <summary>
+            A plugin claimed the map. The level load is held before LoadLevelAsync until that
+            plugin commits a scene, abandons the claim, fails, or runs out of time.
+            </summary>
+    </member>
+    <member name="F:RustBuster2016.API.CustomMapState.Committed">
+      <summary>A scene was committed. It is loaded instead of the server's level.</summary>
+    </member>
+    <member name="F:RustBuster2016.API.CustomMapState.Abandoned">
+      <summary>The owner gave up. The server's level loads.</summary>
+    </member>
+    <member name="F:RustBuster2016.API.CustomMapState.Failed">
+      <summary>The owner failed or the claim timed out. The client disconnects.</summary>
+    </member>
+    <member name="F:RustBuster2016.API.CustomMapState.Loading">
+      <summary>LoadLevelAsync has been started with the committed scene.</summary>
+    </member>
+    <member name="F:RustBuster2016.API.CustomMapState.Loaded">
+      <summary>The committed scene finished loading and OnMapLoaded has fired.</summary>
+    </member>
+    <member name="T:RustBuster2016.API.CustomMapLoadedDelegate">
+      <summary>
+            Fired once the level of the current join has finished loading, custom or not.
+            </summary>
+    </member>
+    <member name="T:RustBuster2016.API.CustomMapHandle">
+      <summary>
+            The owner's handle to the custom map of the current join. Only one exists per join.
+            A handle from a previous join is inert: every call on it returns false.
+            </summary>
+    </member>
+    <member name="P:RustBuster2016.API.CustomMapHandle.Owner">
+      <summary>The name passed to Claim.</summary>
+    </member>
+    <member name="P:RustBuster2016.API.CustomMapHandle.AssemblyName">
+      <summary>The assembly that made the claim.</summary>
+    </member>
+    <member name="P:RustBuster2016.API.CustomMapHandle.IsValid">
+      <summary>False once the join this handle belongs to is over.</summary>
+    </member>
+    <member name="P:RustBuster2016.API.CustomMapHandle.State">
+      <summary>The state of the claim, or None if the handle is stale.</summary>
+    </member>
+    <member name="P:RustBuster2016.API.CustomMapHandle.ServerLevelName">
+      <summary>
+            The level name the server sent in its approval data.
+            </summary>
+    </member>
+    <member name="P:RustBuster2016.API.CustomMapHandle.Progress">
+      <summary>
+            Progress from 0 to 1, shown on the loading screen bar while the claim is pending.
+            Feed it from AssetBundleCreateRequest.progress if you load asynchronously.
+            </summary>
+    </member>
+    <member name="M:RustBuster2016.API.CustomMapHandle.SetStatus(System.String)">
+      <summary>Loading screen text while the claim is pending.</summary>
+    </member>
+    <member name="M:RustBuster2016.API.CustomMapHandle.ExtendTimeout(System.Single)">
+      <summary>
+            Gives the owner more time, counted from now. Capped at CustomMap.MaxTimeoutSeconds.
+            </summary>
+    </member>
+    <member name="M:RustBuster2016.API.CustomMapHandle.Commit(UnityEngine.AssetBundle,System.String)">
+      <summary>
+             Loads sceneName from bundle instead of the server's level. MAIN THREAD ONLY.
+            
+             The bundle must already be loaded (AssetBundle.CreateFromFile, or the
+             assetBundle of a finished CreateFromMemory request). RustBuster takes ownership of
+             it: do not Unload it yourself. It is unloaded with Unload(false) when the join ends.
+             </summary>
+    </member>
+    <member name="M:RustBuster2016.API.CustomMapHandle.Abandon(System.String)">
+      <summary>
+            Gives up the claim and lets the server's level load. Nobody else can claim the map
+            for this join afterwards.
+            </summary>
+    </member>
+    <member name="M:RustBuster2016.API.CustomMapHandle.Fail(System.String)">
+      <summary>
+            The map cannot be loaded and the player must not join without it. Disconnects.
+            </summary>
+    </member>
+    <member name="T:RustBuster2016.API.CustomMap">
+      <summary>
+             Lets one plugin replace the map of the current join with a scene from its own asset bundle.
+            
+             WHAT YOU NEED TO PREPARE
+             ------------------------
+             1. The scene. Build it in Unity 4.5.5f1, the editor version Rust Legacy runs on. Bundles
+                from any other version will not load. Put the game's Assembly-CSharp.dll and its other
+                managed dlls in Assets/Plugins if your scene uses Rust components.
+            
+                The scene only has to contain the world: terrain, water, props, spawners and so on.
+                The game still loads RPOS (the GUI) and LevelShared on top of it, as it does for the
+                stock map. If a scene named "yourscene-TREES" can be loaded, the game adds that too.
+                Otherwise it logs "No tree level found." and carries on.
+            
+             2. The bundle. Build it as a streamed scene bundle for StandaloneWindows:
+            
+                    BuildPipeline.BuildStreamedSceneAssetBundle(
+                        new[] { "Assets/Scenes/hapis_island.unity" }, "hapis_island.unity3d",
+                        BuildTarget.StandaloneWindows, BuildOptions.UncompressedAssetBundle);
+            
+                The scene name you pass to Commit is the file name of the .unity file without its
+                extension ("hapis_island"), not the bundle's file name.
+            
+                Uncompressed + AssetBundle.CreateFromFile is the simplest: it loads straight from
+                disk without reading the whole file into a byte[] first. A compressed bundle makes a
+                smaller download, but needs File.ReadAllBytes + AssetBundle.CreateFromMemory, which
+                holds the file in memory while it decompresses.
+            
+             3. Delivery. Add the .unity3d file to the server's RustBuster downloadables. Big maps
+                should use a URL download. Every downloadable is on disk before any plugin is
+                downloaded, so the file already exists when your Initialize() runs.
+            
+             4. The server. The server must run the same map. Collision, building placement,
+                resource and loot spawns, animals and player spawn points are all simulated on the
+                server's own scene. A client that sees a different map than the server is not
+                playable.
+            
+             HOW THE LOAD WORKS
+             ------------------
+             The level load is held right before Application.LoadLevelAsync until:
+               - every downloadable and plugin is downloaded and every plugin's Initialize() has
+                 returned, and
+               - if a plugin claimed the map, that plugin has committed, abandoned or failed.
+            
+             Only then is the scene loaded. Nothing of the stock map is loaded before that point,
+             so there is nothing to unload or clean up when you replace it.
+            
+             EXAMPLE
+             -------
+                 private CustomMapHandle _map;
+            
+                 public override void Initialize()
+                 {
+                     // Claim in Initialize(). Once every plugin's Initialize() has returned the level
+                     // name is decided, and Claim returns null.
+                     _map = CustomMap.Claim(Name, 180f);
+                     if (_map == null)
+                     {
+                         return; // Another plugin owns the map, or it is too late.
+                     }
+            
+                     if (!File.Exists(MapPath))
+                     {
+                         // Fail() disconnects. Use it when the server must not be played without
+                         // your map. Abandon() would let the stock map load instead.
+                         _map.Fail("hapis_island.unity3d is missing");
+                         return;
+                     }
+            
+                     _map.SetStatus("Loading Hapis Island");
+                     CustomMap.OnMapLoaded += OnMapLoaded;
+            
+                     // Loading can happen right here, or later from a coroutine. The load waits
+                     // either way, until Commit, Abandon, Fail or the timeout.
+                     AssetBundle bundle = AssetBundle.CreateFromFile(MapPath);
+                     if (bundle == null)
+                     {
+                         _map.Fail("hapis_island.unity3d is corrupt or built with the wrong Unity version");
+                         return;
+                     }
+            
+                     _map.Commit(bundle, "hapis_island");
+                 }
+            
+                 private void OnMapLoaded(CustomMapLoadedEvent ev)
+                 {
+                     if (!ev.IsCustomMap)
+                     {
+                         return;
+                     }
+            
+                     // The scene is in. Find your objects, set up weather, and so on.
+                 }
+            
+             If you load the bundle from a coroutine instead, feed _map.Progress from the request so
+             the loading screen bar moves, and call Commit when it is done.
+            
+             RULES
+             -----
+               - One map per join. The first Claim wins and every later one returns null.
+               - Commit, Abandon and Fail are final. Pending is the only state they can leave.
+               - Commit must be called on the main thread, because it touches the AssetBundle.
+               - Do not Unload the bundle you committed. RustBuster unloads it when the join ends.
+               - If none of Commit, Abandon or Fail is called within the timeout, the client
+                 disconnects. ExtendTimeout buys more time while you are still loading.
+               - ServerLevelName is the level the server asked for, already known in Initialize().
+               - OnMapLoaded subscribers and the handle are dropped at the end of every join.
+                 Subscribe and claim again in each Initialize().
+             </summary>
+    </member>
+    <member name="F:RustBuster2016.API.CustomMap.DefaultTimeoutSeconds">
+      <summary>Claim timeout used when none is given.</summary>
+    </member>
+    <member name="F:RustBuster2016.API.CustomMap.MaxTimeoutSeconds">
+      <summary>The longest a claim may hold the load, in seconds.</summary>
+    </member>
+    <member name="E:RustBuster2016.API.CustomMap.OnMapLoaded">
+      <summary>
+            Fired once the level of the current join has loaded. Fires for the stock map too,
+            with IsCustomMap false. Subscribers are dropped when the join ends.
+            </summary>
+    </member>
+    <member name="P:RustBuster2016.API.CustomMap.State">
+      <summary>Where the current join's map is in its lifecycle.</summary>
+    </member>
+    <member name="P:RustBuster2016.API.CustomMap.IsClaimed">
+      <summary>True if a plugin owns the map of this join.</summary>
+    </member>
+    <member name="P:RustBuster2016.API.CustomMap.CanClaim">
+      <summary>True while Claim would succeed.</summary>
+    </member>
+    <member name="P:RustBuster2016.API.CustomMap.Owner">
+      <summary>The owner of this join's map, or null.</summary>
+    </member>
+    <member name="P:RustBuster2016.API.CustomMap.ServerLevelName">
+      <summary>The level name the server sent.</summary>
+    </member>
+    <member name="P:RustBuster2016.API.CustomMap.SceneName">
+      <summary>The committed scene, or null.</summary>
+    </member>
+    <member name="M:RustBuster2016.API.CustomMap.Claim(System.String,System.Single)">
+      <summary>
+             Claims the map of the current join. Returns null if another plugin already owns
+             it, or if the level has already been chosen. Call it from Initialize().
+            
+             From this moment until Commit, Abandon or Fail the level load is held. If none of
+             those is called within timeoutSeconds the client disconnects.
+             </summary>
+      <param name="owner">Your plugin name, for logs and the loading screen.</param>
+      <param name="timeoutSeconds">How long the load may wait for you.</param>
+    </member>
     <member name="T:RustBuster2016.API.DataStoreContext">
       <summary>
             Specifies which datastore an API caller wants to access.
@@ -647,6 +960,39 @@
     <member name="M:RustBuster2016.API.Events.CraftWindowClickEvent.Cancel">
       <summary>
             Cancels the event, preventing the native click action from executing.
+            </summary>
+    </member>
+    <member name="T:RustBuster2016.API.Events.CustomMapLoadedEvent">
+      <summary>
+            Event fired once the level of the current join has finished loading.
+            Fires for the stock map as well, so check IsCustomMap.
+            </summary>
+    </member>
+    <member name="P:RustBuster2016.API.Events.CustomMapLoadedEvent.SceneName">
+      <summary>
+            Returns the name of the scene that was actually loaded.
+            </summary>
+    </member>
+    <member name="P:RustBuster2016.API.Events.CustomMapLoadedEvent.ServerLevelName">
+      <summary>
+            Returns the level name the server sent. Differs from SceneName when a plugin
+            replaced the map.
+            </summary>
+    </member>
+    <member name="P:RustBuster2016.API.Events.CustomMapLoadedEvent.Owner">
+      <summary>
+            Returns the plugin that supplied the map, or null for the stock map.
+            </summary>
+    </member>
+    <member name="P:RustBuster2016.API.Events.CustomMapLoadedEvent.Bundle">
+      <summary>
+            Returns the bundle the scene came from, or null for the stock map.
+            RustBuster owns it, do not Unload it.
+            </summary>
+    </member>
+    <member name="P:RustBuster2016.API.Events.CustomMapLoadedEvent.IsCustomMap">
+      <summary>
+            Returns true if the loaded level came from a plugin rather than the game.
             </summary>
     </member>
     <member name="T:RustBuster2016.API.Events.DatablockDictionaryInitializedEvent">

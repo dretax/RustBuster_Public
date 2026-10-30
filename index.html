@@ -173,25 +173,87 @@
   #install .bar i{display:block;height:100%;width:0;background:linear-gradient(90deg,#0e9bec,#58d5f7);transition:width .1s linear}
   #install .pct{margin-top:8px;font-size:12px;color:#b5b5b5}
 
-  /* launcher */
-  #install .launch{left:424px;top:104px;width:420px;height:300px;z-index:25;background:linear-gradient(165deg,#1e1640 0,#11151a 70%);border-color:#2d3640}
-  #install .launch .titlebar{background:rgba(0,0,0,.25)}
-  #install .launch .head{height:96px;display:flex;align-items:center;justify-content:center;border-bottom:1px solid rgba(255,255,255,.07)}
-  #install .launch .head img{height:52px;max-width:80%}
-  #install .launch .lines{padding:16px 24px}
-  #install .ln{display:flex;align-items:center;gap:12px;padding:5px 0;font-size:13px;color:#8a9499;opacity:.45;transition:opacity .25s,color .25s}
-  #install .ln.busy,#install .ln.ok{opacity:1;color:#e6e9eb}
-  #install .ln .ck{width:18px;height:18px;border-radius:50%;border:2px solid #3b444b;display:grid;place-items:center;font-size:10px;line-height:1;color:transparent}
-  #install .ln.busy .ck{border-color:#58d5f7;border-top-color:transparent;animation:ib-spin .7s linear infinite}
-  #install .ln.ok .ck{border-color:#2f9e6b;background:#2f9e6b;color:#fff}
-  @keyframes ib-spin{to{transform:rotate(360deg)}}
+  /* RustBuster Launcher, modelled on the real app */
+  #install .launch{left:292px;top:40px;width:640px;height:466px;z-index:25;background:#1b1b1b;border-color:#3a3a3a}
+  #install .lt{height:30px;display:flex;align-items:center;gap:8px;padding-left:10px;background:#f3f3f3;color:#1a1a1a;font-size:12px}
+  #install .lt img,#install .lt svg{width:16px;height:16px;flex:0 0 16px}
+  #install .lt .ctl{margin-left:auto;display:flex;color:#333}
+  #install .lt .ctl span{width:38px;height:30px;display:grid;place-items:center;font-size:12px}
+  #install .lbody{display:flex;height:436px}
+  #install .lside{width:112px;flex:0 0 112px;background:#1b1b1b;padding-top:14px}
+  #install .lside .wm{font-weight:700;font-size:18px;color:#ef4a2c;text-align:center}
+  #install .lside .meta{margin:12px 0 10px;text-align:center;font-size:10px;line-height:1.7;color:#8b8b8b}
+  #install .lside .nav div{padding:10px 0 10px 20px;font-size:12.5px;font-weight:600;color:#cfcfcf;cursor:pointer}
+  #install .lside .nav .cur{background:#2a2a2a;color:#fff}
+  #install .lmain{flex:1;display:flex;flex-direction:column;min-width:0}
+  #install .lstat{height:64px;flex:0 0 64px;padding:8px 14px;font-size:12px;line-height:1.45;color:#b9b9b9}
+  #install .lstat .k{font-size:9.5px;letter-spacing:.06em;color:#8b8b8b;font-weight:600}
+  #install .lstat b{font-weight:600;margin-left:6px;transition:color .3s}
+  #install .lstat b.live{color:#3fbf7f}
+  #install .lpanel{position:relative;flex:1;min-height:0;background:#1e1f22;
+    border-top:3px solid #e6e6e6;border-left:3px solid #e6e6e6;overflow:hidden}
+  #install .lpage{position:absolute;inset:0;padding:8px 12px 10px;display:flex;flex-direction:column;
+    opacity:0;visibility:hidden;transition:opacity .25s,visibility 0s .25s}
+  #install .lpage.on{opacity:1;visibility:visible;transition:opacity .25s,visibility 0s}
+  #install .lk{font-size:9.5px;letter-spacing:.06em;color:#8b8b8b;font-weight:600;margin:2px 0 6px}
+  #install .lk.l2{margin-top:6px}
+
+  /* Dashboard cards */
+  #install .card{position:relative;display:flex;align-items:center;gap:10px;height:44px;flex:0 0 44px;margin-bottom:4px;
+    padding:0 12px;background:#26282c;border-left:3px solid var(--c);transition:opacity .3s,background .2s,box-shadow .2s}
+  #install .card .ci{flex:0 0 26px;width:26px;height:26px;border-radius:50%;border:1.5px solid var(--c);display:grid;place-items:center;color:var(--c);background:rgba(0,0,0,.25)}
+  #install .card .ci svg{width:15px;height:15px}
+  #install .card .t{display:block;font-size:12.5px;font-weight:600;color:#f1f1f1;line-height:1.25}
+  #install .card .s{display:block;font-size:10.5px;color:#9a9a9a;line-height:1.3}
+  #install .card .chev{margin-left:auto;color:#777;font-size:16px}
+  #install .card.dim{opacity:.35}
+  #install .card.dim .chev{visibility:hidden}
+  #install .card.hover{background:#2f3237;box-shadow:inset 0 0 0 1px rgba(255,255,255,.8)}
+  #install .llog{flex:1;min-height:0;display:flex;flex-direction:column;justify-content:flex-end;overflow:hidden;
+    font:10.5px/14px Consolas,"Cascadia Mono",ui-monospace,monospace;color:#e4e4e4;white-space:nowrap}
+  #install .llog div{animation:ib-logln .25s ease}
+  #install .llog .warn{color:#f0a020}
+  @keyframes ib-logln{from{opacity:0;transform:translateY(4px)}}
+  @media (prefers-reduced-motion:reduce){#install .llog div{animation:none}}
+
+  /* Settings page inside the launcher */
+  #install .sgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  #install .sgroup{position:relative;border:1px solid #4a4a4a;border-radius:2px;padding:12px 12px 10px}
+  #install .sgroup .legend{position:absolute;top:-7px;left:10px;padding:0 6px;background:#1e1f22;font-size:11px;font-weight:600;color:#dadada}
+  #install .sgroup p{margin:0 0 8px;font-size:10.5px;line-height:1.4;color:#b3b3b3}
+  #install .sgroup .note{color:#f0a020;font-style:italic;margin-top:6px}
+  #install .radio,#install .check{display:flex;align-items:center;gap:7px;margin:2px 0;font-size:11.5px;color:#e2e2e2}
+  #install .radio i{width:11px;height:11px;border-radius:50%;border:1.5px solid #ef4a2c;position:relative}
+  #install .radio.on i::after{content:"";position:absolute;inset:2px;border-radius:50%;background:#ef4a2c}
+  #install .radio.off i{border-color:#777}
+  #install .check i{width:11px;height:11px;border:1.5px solid #777;background:transparent}
+  #install .sdd{position:relative;height:26px;border:1px solid #4a4a4a;background:#2a2a2a;border-radius:2px;
+    display:flex;align-items:center;gap:7px;padding:0 8px;font-size:11.5px;color:#e2e2e2;margin-top:6px}
+  #install .sdd.open{border-color:#58d5f7;box-shadow:0 0 0 1px #58d5f7}
+  #install .sdd .lang-ic{color:#9a9a9a}
+  #install .sdd .lang-ic svg{width:12px;height:12px}
+  #install .sdd .caret{margin-left:auto;color:#9a9a9a;font-size:9px}
+  #install .ddlist{position:absolute;left:0;right:0;top:28px;border:1px solid #58d5f7;background:#2a2a2a;z-index:5;
+    padding:3px 0;max-height:0;overflow:hidden;opacity:0;transition:max-height .3s,opacity .2s}
+  #install .sdd.open .ddlist{max-height:140px;opacity:1}
+  #install .ddlist div{display:flex;align-items:center;gap:7px;padding:4px 10px;font-size:11.5px;color:#dadada}
+  #install .ddlist div .lang-ic{color:#9a9a9a}
+  #install .ddlist div.hover{background:#333;color:#fff}
+  #install .ddlist div.cur{color:#ef4a2c}
+  #install .ddlist div.cur .lang-ic{color:#ef4a2c}
+  #install .sbtn{display:block;width:100%;margin-top:10px;padding:7px 10px;border-radius:2px;font-size:11.5px;font-weight:600;text-align:center;
+    background:#8a1f1f;color:#fff}
+  #install .sbtn.logs{background:#2a3338;color:#e2e2e2;border:1px solid #4a4a4a;font-weight:500}
+  #install .sbtn.logs svg{width:12px;height:12px;vertical-align:-2px;margin-right:6px}
+  #install .shint{margin-top:6px;padding:7px 10px;background:rgba(14,155,236,.1);border:1px solid rgba(14,155,236,.3);
+    font-size:10.5px;color:#b3cfdd;border-radius:2px}
 
   /* toast */
   #install .toast{position:absolute;right:12px;bottom:60px;z-index:35;width:300px;padding:12px 14px;border-radius:8px;display:flex;gap:12px;align-items:center;
     background:#262a2f;border:1px solid #3c444b;box-shadow:0 14px 34px rgba(0,0,0,.5);opacity:0;transform:translateX(24px);transition:opacity .3s,transform .3s}
   #install .toast.on{opacity:1;transform:none}
-  #install .toast .ic{flex:0 0 36px;height:36px;border-radius:8px;display:grid;place-items:center;background:#1b2838;color:#c7d5e0}
-  #install .toast .ic svg{width:22px;height:22px}
+  #install .toast .ic{flex:0 0 36px;height:36px;border-radius:8px;display:grid;place-items:center;background:#1b2838}
+  #install .toast .ic svg{width:28px;height:28px;display:block}
   #install .toast b{display:block;color:#fff;font-size:13px}
   #install .toast span{font-size:12px;color:#aab3b8}
 
@@ -199,21 +261,19 @@
   #install .taskbar{position:absolute;left:0;right:0;bottom:0;height:48px;z-index:15;display:flex;align-items:center;justify-content:center;gap:6px;
     background:rgba(24,24,30,.9);border-top:1px solid rgba(255,255,255,.06)}
   #install .tb{position:relative;width:40px;height:40px;border-radius:6px;display:grid;place-items:center;color:#cfd6da;transition:background .2s}
-  #install .tb svg{width:22px;height:22px}
+  #install .tb svg{width:24px;height:24px;display:block}
   #install .tb::after{content:"";position:absolute;bottom:2px;left:50%;width:0;height:3px;border-radius:2px;background:#58d5f7;transform:translateX(-50%);transition:width .25s}
   #install .tb.running::after{width:14px}
-  #install .tb-steam{color:#c7d5e0}
   #install .tb .tip{position:absolute;bottom:50px;left:50%;transform:translate(-50%,4px);padding:4px 10px;border-radius:6px;white-space:nowrap;
     background:#2b2b2b;border:1px solid #454545;font-size:12px;color:#eee;opacity:0;transition:opacity .2s,transform .2s;pointer-events:none}
   #install .tb.hover{background:rgba(255,255,255,.08)}
   #install .tb.hover .tip{opacity:1;transform:translate(-50%,0)}
-  #install .launch .head .wordmark{font-size:24px;font-weight:700;letter-spacing:.02em;color:#fff}
   #install .tb.launching svg{animation:ib-hop .45s ease 2}
   @keyframes ib-hop{50%{transform:translateY(-5px)}}
   #install .tray{position:absolute;right:14px;top:0;bottom:0;display:flex;align-items:center;gap:14px;font-size:11px;color:#ddd}
-  #install .tray svg{width:16px;height:16px}
-  #install .steam-tray{position:relative;color:#c7d5e0;opacity:0;transform:scale(.6);transition:opacity .3s,transform .3s}
-  #install .steam-tray::before{content:"";position:absolute;right:-3px;bottom:-2px;width:7px;height:7px;border-radius:50%;background:#2f9e6b;box-shadow:0 0 0 2px rgba(24,24,30,.9)}
+  #install .tray svg{width:16px;height:16px;display:block}
+  #install .steam-tray{position:relative;opacity:0;transform:scale(.6);transition:opacity .3s,transform .3s}
+  #install .steam-tray::before{content:"";position:absolute;right:-3px;bottom:-2px;width:7px;height:7px;border-radius:50%;background:#2f9e6b;box-shadow:0 0 0 2px rgba(24,24,30,.9);z-index:2}
   #install .steam-tray::after{content:"";position:absolute;inset:-7px;border-radius:50%;border:2px solid #58d5f7;opacity:0}
   #install .stage.steam-on .steam-tray{opacity:1;transform:none}
   #install .stage.ping .steam-tray::after{animation:ib-ping 1s ease-out 2}
@@ -290,11 +350,11 @@
 
     <p class="steam-note">
       <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 7v6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/><circle cx="12" cy="16.6" r="1.3" fill="currentColor"/></svg>
-      <span><strong>Start Steam first and keep it running.</strong> RustBuster needs Steam open in the background to launch the game.</span>
+      <span><strong>Start Steam first and keep it running.</strong> RustBuster needs Steam open and logged in to launch the game.</span>
     </p>
 
     <div class="stage-frame">
-      <div class="stage" role="img" aria-label="Animation: open Steam and leave it running, right-click RustBuster.zip in your Downloads folder and choose Extract All, open the new RustBuster folder, then double-click RustBusterLauncher.exe.">
+      <div class="stage" role="img" aria-label="Animation: open Steam and leave it running, right-click RustBuster.zip in your Downloads folder and choose Extract All, open the new RustBuster folder, double-click RustBusterLauncher.exe, open the Settings tab to see the available languages, then come back to the dashboard and click Launch Rust.">
         <svg width="0" height="0" style="position:absolute" aria-hidden="true">
           <defs>
             <symbol id="ib-folder" viewBox="0 0 24 24"><path d="M2 6.5A1.5 1.5 0 0 1 3.5 5h5.2l2 2h9.8A1.5 1.5 0 0 1 22 8.5v10a1.5 1.5 0 0 1-1.5 1.5h-17A1.5 1.5 0 0 1 2 18.5z" fill="#e3a334"/><path d="M2 9.5h20v9a1.5 1.5 0 0 1-1.5 1.5h-17A1.5 1.5 0 0 1 2 18.5z" fill="#f7c95c"/></symbol>
@@ -302,11 +362,48 @@
             <symbol id="ib-file" viewBox="0 0 24 24"><path d="M6 2.5h8l5 5v13a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1v-17a1 1 0 0 1 1-1z" fill="#e9edf0"/><path d="M14 2.5v5h5z" fill="#b9c1c6"/></symbol>
             <symbol id="ib-dll" viewBox="0 0 24 24"><path d="M6 2.5h8l5 5v13a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1v-17a1 1 0 0 1 1-1z" fill="#e9edf0"/><path d="M14 2.5v5h5z" fill="#b9c1c6"/><circle cx="12" cy="15" r="3" fill="none" stroke="#6f7a80" stroke-width="1.8"/></symbol>
             <symbol id="ib-exe" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2" fill="#2d6fb5"/><path d="M3 6a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v2H3z" fill="#58d5f7"/><rect x="6" y="11" width="12" height="6" rx="1" fill="#e9edf0" opacity=".85"/></symbol>
-            <symbol id="ib-pad" viewBox="0 0 24 24"><path d="M7 7h10a5 5 0 0 1 4.8 6.4l-1.3 4.3a2.2 2.2 0 0 1-3.7.9L14.5 16h-5l-2.3 2.6a2.2 2.2 0 0 1-3.7-.9l-1.3-4.3A5 5 0 0 1 7 7z" fill="currentColor"/><path d="M8 10.2v3.6M6.2 12h3.6" stroke="#141a22" stroke-width="1.6" stroke-linecap="round"/><circle cx="16" cy="11" r="1.1" fill="#141a22"/><circle cx="17.6" cy="13.4" r="1.1" fill="#141a22"/></symbol>
             <symbol id="ib-search" viewBox="0 0 24 24"><circle cx="10.5" cy="10.5" r="6" fill="none" stroke="currentColor" stroke-width="2"/><path d="M15 15l5 5" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></symbol>
             <symbol id="ib-pc" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="12" rx="1.5" fill="#4a90d9"/><rect x="5" y="6" width="14" height="8" fill="#9fd3f7"/><path d="M8 20h8M12 16v4" stroke="#c8ced2" stroke-width="2" stroke-linecap="round"/></symbol>
             <symbol id="ib-dl" viewBox="0 0 24 24"><path d="M12 3v12m0 0l-5-5m5 5l5-5M4 20h16" fill="none" stroke="#58d5f7" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
             <symbol id="ib-wifi" viewBox="0 0 24 24"><path d="M2.5 9a14 14 0 0 1 19 0M5.8 12.5a9 9 0 0 1 12.4 0M9.2 16a4 4 0 0 1 5.6 0" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="12" cy="19.3" r="1.4" fill="currentColor"/></symbol>
+            <symbol id="ib-globe" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="1.5"/><ellipse cx="12" cy="12" rx="4.5" ry="9" fill="none" stroke="currentColor" stroke-width="1.3"/><path d="M3 12h18" stroke="currentColor" stroke-width="1.3"/></symbol>
+            <symbol id="ib-logs" viewBox="0 0 24 24"><path d="M6 3h9l4 4v14H6z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="M9 11h7M9 14.5h7M9 18h5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></symbol>
+            <!-- Gradient for the Steam disc -->
+            <linearGradient id="ib-steam-g" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0" stop-color="#07152e"/>
+              <stop offset=".55" stop-color="#143661"/>
+              <stop offset="1" stop-color="#2282c0"/>
+            </linearGradient>
+            <!-- Steam logo: dark disc, white donut on upper right, piston rod to a white ball on lower left -->
+            <symbol id="ib-steam" viewBox="0 0 24 24">
+              <circle cx="12" cy="12" r="11" fill="url(#ib-steam-g)"/>
+              <!-- Ball -->
+              <circle cx="7.8" cy="15.6" r="2.9" fill="#fff"/>
+              <circle cx="7.8" cy="15.6" r="1" fill="#07152e"/>
+              <!-- Connecting rod -->
+              <path d="M8.9 13.3 L15.1 7.4 L17.1 9.5 L10.9 15.4 Z" fill="#fff"/>
+              <!-- Donut -->
+              <circle cx="16" cy="8.4" r="3.6" fill="#fff"/>
+              <circle cx="16" cy="8.4" r="1.5" fill="#07152e"/>
+            </symbol>
+            <!-- RustBuster icon: blue square, three dark trefoil blades -->
+            <symbol id="ib-rb" viewBox="0 0 24 24">
+              <rect width="24" height="24" fill="#1a95d8"/>
+              <g fill="#141414">
+                <g transform="rotate(0 12 12)">
+                  <path d="M8 2 L16 2 L14 8 L10 8 Z"/>
+                  <path d="M10.5 9.3 L13.5 9.3 L13 11 L11 11 Z"/>
+                </g>
+                <g transform="rotate(120 12 12)">
+                  <path d="M8 2 L16 2 L14 8 L10 8 Z"/>
+                  <path d="M10.5 9.3 L13.5 9.3 L13 11 L11 11 Z"/>
+                </g>
+                <g transform="rotate(240 12 12)">
+                  <path d="M8 2 L16 2 L14 8 L10 8 Z"/>
+                  <path d="M10.5 9.3 L13.5 9.3 L13 11 L11 11 Z"/>
+                </g>
+              </g>
+            </symbol>
           </defs>
         </svg>
 
@@ -343,7 +440,7 @@
                 <div class="row"><span class="nm"><svg><use href="#ib-exe"/></svg>rust.exe</span><span class="dt">10/23/2026 16:30</span><span class="ty">Application</span></div>
                 <div class="row"><span class="nm"><svg><use href="#ib-file"/></svg>RustBuster.json</span><span class="dt">09/27/2026 00:36</span><span class="ty">JSON file</span></div>
                 <div class="row"><span class="nm"><svg><use href="#ib-exe"/></svg>RustBusterHelper.exe</span><span class="dt">10/23/2026 16:30</span><span class="ty">Application</span></div>
-                <div class="row" data-row="launcher"><span class="nm"><img src="assets/images/faviconbuster.png" alt="">RustBusterLauncher.exe</span><span class="dt">09/23/2026 23:27</span><span class="ty">Application</span></div>
+                <div class="row" data-row="launcher"><span class="nm"><img src="assets/images/faviconbuster.png" alt="" onerror="this.outerHTML='&lt;svg&gt;&lt;use href=&quot;#ib-rb&quot;/&gt;&lt;/svg&gt;'">RustBusterLauncher.exe</span><span class="dt">09/23/2026 23:27</span><span class="ty">Application</span></div>
                 <div class="row"><span class="nm"><svg><use href="#ib-dll"/></svg>steam_api64.dll</span><span class="dt">10/23/2026 16:30</span><span class="ty">Extension</span></div>
                 <div class="row"><span class="nm"><svg><use href="#ib-file"/></svg>version.txt</span><span class="dt">10/23/2026 16:30</span><span class="ty">Text file</span></div>
               </div>
@@ -380,31 +477,122 @@
           <div class="btns"><span class="b pri dlg-extract">Extract</span><span class="b">Cancel</span></div>
         </div>
 
-        <!-- RustBuster launcher -->
+        <!-- RustBuster Launcher -->
         <div class="win launch">
-          <div class="titlebar"><img src="assets/images/faviconbuster.png" alt="">RustBuster Launcher<div class="ctl"><span>&#8212;</span><span>&#10005;</span></div></div>
-          <div class="head"><img src="assets/images/logo.png" alt="" onerror="this.outerHTML='&lt;span class=&quot;wordmark&quot;&gt;RustBuster&lt;/span&gt;'"></div>
-          <div class="lines">
-            <div class="ln"><span class="ck">&#10003;</span>Steam is running</div>
-            <div class="ln"><span class="ck">&#10003;</span>Files verified</div>
-            <div class="ln"><span class="ck">&#10003;</span>Starting Rust Legacy</div>
-            <div class="bar"><i class="launch-bar"></i></div>
+          <div class="lt">
+            <img src="assets/images/faviconbuster.png" alt="" onerror="this.outerHTML='&lt;svg&gt;&lt;use href=&quot;#ib-rb&quot;/&gt;&lt;/svg&gt;'">
+            RustBuster Launcher
+            <div class="ctl"><span>&#8212;</span><span>&#9633;</span><span>&#10005;</span></div>
+          </div>
+          <div class="lbody">
+            <div class="lside">
+              <div class="wm">RustBuster</div>
+              <div class="meta">v1.0.28<br>Arch: Amd64</div>
+              <div class="nav">
+                <div class="nav-dash cur">Dashboard</div>
+                <div class="nav-set">Settings</div>
+                <div>Community</div>
+              </div>
+            </div>
+            <div class="lmain">
+              <div class="lstat">
+                <div class="k">SYSTEM STATUS</div>
+                <div>Protection Service:<b class="st-svc">STOPPED</b></div>
+                <div>Rust:<b class="st-rust">NOT RUNNING</b></div>
+              </div>
+              <div class="lpanel">
+                <!-- Dashboard page -->
+                <div class="lpage lpage-dash on">
+                  <div class="lk">CONTROL PANEL</div>
+                  <div class="card dim" data-card="launch" style="--c:#e0522d">
+                    <span class="ci"><svg viewBox="0 0 24 24"><path d="M9 6.5l9 5.5-9 5.5z" fill="currentColor"/></svg></span>
+                    <span><span class="t">Launch Rust</span><span class="s">Click to launch Rust with RustBuster protection.</span></span>
+                    <span class="chev">&#8250;</span>
+                  </div>
+                  <div class="card dim" data-card="stop" style="--c:#b3261e">
+                    <span class="ci"><svg viewBox="0 0 24 24"><rect x="7.5" y="7.5" width="9" height="9" rx="1" fill="currentColor"/></svg></span>
+                    <span><span class="t">Stop Service</span><span class="s">Stop the active protection service.</span></span>
+                    <span class="chev">&#8250;</span>
+                  </div>
+                  <div class="card" style="--c:#2e86de">
+                    <span class="ci"><svg viewBox="0 0 24 24"><path d="M17.6 8.6A6.5 6.5 0 1 0 18.6 13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M18.8 4.8v4.4h-4.4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+                    <span><span class="t">Check for Update</span><span class="s">Check for RustBuster updates from the server.</span></span>
+                    <span class="chev">&#8250;</span>
+                  </div>
+                  <div class="card" style="--c:#d9a21b">
+                    <span class="ci"><svg viewBox="0 0 24 24"><path d="M7 5.5h10M12 5.5v11m-4.5-4.5l4.5 4.5 4.5-4.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+                    <span><span class="t">Force Update (Download All)</span><span class="s">Force re-download all protection files.</span></span>
+                    <span class="chev">&#8250;</span>
+                  </div>
+                  <div class="lk l2">ACTIVITY LOG</div>
+                  <div class="llog"></div>
+                </div>
+
+                <!-- Settings page -->
+                <div class="lpage lpage-set">
+                  <div class="sgrid">
+                    <!-- Left column -->
+                    <div>
+                      <div class="sgroup">
+                        <span class="legend">Steam AppID</span>
+                        <p>Switch between AppID 480 (Recommended for RustBuster) and 252490 (Official).</p>
+                        <div class="radio on"><i></i>480 (Recommended)</div>
+                        <div class="radio off"><i></i>252490 (Official)</div>
+                        <p class="note">Note: Changing this cannot be done while Rust is running.</p>
+                      </div>
+                      <span class="sbtn">Uninstall Protection</span>
+                      <div class="shint" style="color:#d6c080;background:rgba(240,160,32,.08);border-color:rgba(240,160,32,.3)">
+                        &#9888; Only press this if you are uninstalling, facing issues, or a developer told you to.
+                      </div>
+                    </div>
+                    <!-- Right column -->
+                    <div>
+                      <div class="sgroup">
+                        <span class="legend">Launch Options</span>
+                        <p>Configure graphics and overlay settings for Rust.</p>
+                        <div class="check"><i></i>Disable Steam Overlay</div>
+                        <div class="check"><i></i>Disable Discord Overlay</div>
+                      </div>
+                      <div class="sgroup" style="margin-top:14px">
+                        <span class="legend">Language</span>
+                        <p>Select your preferred language for the launcher.</p>
+                        <div class="sdd" data-dd="lang">
+                          <span class="lang-ic"><svg><use href="#ib-globe"/></svg></span>
+                          <span class="lang-label">English</span>
+                          <span class="caret">&#9660;</span>
+                          <div class="ddlist">
+                            <div class="cur" data-lang="English"><span class="lang-ic"><svg><use href="#ib-globe"/></svg></span>English</div>
+                            <div data-lang="French"><span class="lang-ic"><svg><use href="#ib-globe"/></svg></span>French</div>
+                            <div data-lang="German"><span class="lang-ic"><svg><use href="#ib-globe"/></svg></span>German</div>
+                            <div data-lang="Hungarian"><span class="lang-ic"><svg><use href="#ib-globe"/></svg></span>Hungarian</div>
+                            <div data-lang="Russian"><span class="lang-ic"><svg><use href="#ib-globe"/></svg></span>Russian</div>
+                            <div data-lang="Spanish"><span class="lang-ic"><svg><use href="#ib-globe"/></svg></span>Spanish</div>
+                            <div data-lang="Arabic"><span class="lang-ic"><svg><use href="#ib-globe"/></svg></span>Arabic</div>
+                          </div>
+                        </div>
+                      </div>
+                      <span class="sbtn logs"><svg><use href="#ib-logs"/></svg>Collect Logs</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
 
         <!-- Notification -->
         <div class="toast">
-          <div class="ic"><svg><use href="#ib-pad"/></svg></div>
-          <div><b>Steam is running</b><span>Leave it open in the background while you play.</span></div>
+          <div class="ic"><svg><use href="#ib-steam"/></svg></div>
+          <div><b>Steam is running</b><span>Log in and leave it open while you play.</span></div>
         </div>
 
         <!-- Taskbar -->
         <div class="taskbar">
           <div class="tb"><svg><use href="#ib-search"/></svg></div>
           <div class="tb tb-explorer"><svg><use href="#ib-folder"/></svg></div>
-          <div class="tb tb-steam"><svg><use href="#ib-pad"/></svg><span class="tip">Steam</span></div>
+          <div class="tb tb-steam"><svg><use href="#ib-steam"/></svg><span class="tip">Steam</span></div>
           <div class="tray">
-            <span class="steam-tray"><svg><use href="#ib-pad"/></svg></span>
+            <span class="steam-tray"><svg><use href="#ib-steam"/></svg></span>
             <svg><use href="#ib-wifi"/></svg>
             <div class="clock">18:01<br>10/26/2026</div>
           </div>
@@ -419,7 +607,7 @@
     <div class="isteps">
       <div class="istep"><span class="n">1</span><div><strong>Start Steam</strong><span class="d">Log in and leave Steam running in the background while you play.</span></div></div>
       <div class="istep"><span class="n">2</span><div><strong>Extract the zip</strong><span class="d">Right-click RustBuster.zip, choose Extract All, then open the new folder.</span></div></div>
-      <div class="istep"><span class="n">3</span><div><strong>Run the launcher</strong><span class="d">Double-click RustBusterLauncher.exe to start the game.</span></div></div>
+      <div class="istep"><span class="n">3</span><div><strong>Run the launcher</strong><span class="d">Double-click RustBusterLauncher.exe. Pick a language in Settings if you want, then click Launch Rust.</span></div></div>
     </div>
 
     <div class="demo-ctl">
@@ -599,10 +787,31 @@
   var cursor = q(".cursor"), ripple = q(".ripple"), pill = q(".pill"), fade = q(".fade");
   var explorer = q(".explorer"), menu = q(".ctx"), dialog = q(".dlg"), launch = q(".launch"), toast = q(".toast");
   var tbSteam = q(".tb-steam"), tbExplorer = q(".tb-explorer");
-  var dlgBar = q(".dlg-bar"), launchBar = q(".launch-bar"), pct = q(".pct");
+  var dlgBar = q(".dlg-bar"), pct = q(".pct");
+  var logBox = q(".llog"), cardLaunch = q('[data-card="launch"]'), cardStop = q('[data-card="stop"]');
+  var stSvc = q(".st-svc"), stRust = q(".st-rust");
+  var pageDash = q(".lpage-dash"), pageSet = q(".lpage-set");
+  var navDash = q(".nav-dash"), navSet = q(".nav-set");
+  var dd = q('[data-dd="lang"]'), ddLabel = q(".lang-label");
   var steps = Array.prototype.slice.call(root.querySelectorAll(".istep"));
   var playBtn = root.querySelector('[data-act="play"]');
   var replayBtn = root.querySelector('[data-act="replay"]');
+
+  /* Launcher log lines. No Steam username is shown on purpose. */
+  var BOOT = [
+    ["18:02:14", "Detected system architecture: Amd64"],
+    ["18:02:14", "Running system checks in the background..."],
+    ["18:02:14", "Protection service installed: YES"],
+    ["18:02:14", "Steam running: YES"],
+    ["18:02:14", "Steam user logged in: YES"],
+    ["18:02:14", "Ready. Click 'Launch Rust' to start."]
+  ];
+  var START = [
+    ["18:02:17", "Starting protection service..."],
+    ["18:02:18", "Protection service started."],
+    ["18:02:18", "Launching Rust..."],
+    ["18:02:21", "Rust is running."]
+  ];
 
   /* Scale the fixed 960x600 scene to the frame, like a video. */
   function fit() { stage.style.transform = "scale(" + frame.clientWidth / 960 + ")"; }
@@ -673,13 +882,13 @@
     q(".path").innerHTML = "<b>This PC</b><b>&#8250;</b>Downloads" + (inside ? "<b>&#8250;</b>RustBuster" : "");
   }
   var labels = ["", "Start Steam", "Extract the zip", "Run the launcher"];
-  function setStep(n) {
+  function setStep(n, custom) {
     steps.forEach(function (s, i) {
       s.classList.toggle("active", i + 1 === n);
       s.classList.toggle("done", i + 1 < n);
     });
-    pill.textContent = n > 3 ? "Ready to play" : n ? "Step " + n + " of 3: " + labels[n] : "";
-    pill.classList.toggle("on", n > 0);
+    pill.textContent = custom ? custom : (n > 3 ? "Ready to play" : n ? "Step " + n + " of 3: " + labels[n] : "");
+    pill.classList.toggle("on", n > 0 || !!custom);
   }
   function bar(el, value) {
     el.style.transition = "none";
@@ -695,15 +904,43 @@
     }
   }
 
+  /* Launcher helpers. */
+  function log(line) {
+    var d = document.createElement("div");
+    d.textContent = "[" + line[0] + "] " + line[1];
+    logBox.appendChild(d);
+    while (logBox.children.length > 12) logBox.removeChild(logBox.firstChild);
+  }
+  function status(svc, rust) {
+    stSvc.textContent = svc ? "RUNNING" : "STOPPED";
+    stSvc.classList.toggle("live", svc);
+    stRust.textContent = rust ? "RUNNING" : "NOT RUNNING";
+    stRust.classList.toggle("live", rust);
+  }
+  function nav(name) {
+    var dashOn = name === "dash";
+    pageDash.classList.toggle("on", dashOn);
+    pageSet.classList.toggle("on", !dashOn);
+    navDash.classList.toggle("cur", dashOn);
+    navSet.classList.toggle("cur", !dashOn);
+  }
+
   function reset() {
     [explorer, menu, dialog, launch, toast].forEach(off);
     stage.classList.remove("steam-on", "ping");
     tbSteam.classList.remove("running", "launching", "hover");
     tbExplorer.classList.remove("running");
     dialog.classList.remove("copying");
-    bar(dlgBar, 0); bar(launchBar, 0);
+    bar(dlgBar, 0);
     pct.textContent = "0% complete";
-    qa(".ln").forEach(function (l) { l.className = "ln"; });
+    logBox.textContent = "";
+    status(false, false);
+    cardLaunch.classList.add("dim");
+    cardLaunch.classList.remove("hover");
+    cardStop.classList.add("dim");
+    nav("dash");
+    dd.classList.remove("open");
+    qa(".ddlist div").forEach(function (d) { d.classList.remove("hover"); });
     var folder = q('[data-row="folder"]');
     folder.classList.add("gone");
     folder.classList.remove("appear");
@@ -795,21 +1032,58 @@
     await dbl();
     await wait(350);
     on(launch);
-    await wait(600);
+    await wait(500);
 
-    var lines = qa(".ln");
-    lines[0].className = "ln busy";
-    stage.classList.add("ping");
+    for (var i = 0; i < BOOT.length; i++) {
+      log(BOOT[i]);
+      if (i === 3) stage.classList.add("ping");
+      await wait(i === 1 ? 700 : 320);
+    }
+    cardLaunch.classList.remove("dim");
+    await wait(700);
+
+    /* 3b. Settings side-trip: open the language picker to show the options, then leave */
+    setStep(3, "Settings · available languages");
+    await move(navSet, 900);
+    await click();
+    nav("set");
+    await wait(900);
+
+    await move(dd, 900, 20, 0);
+    await click();
+    dd.classList.add("open");
+    await wait(2400);
+
+    /* Close the picker without choosing anything */
+    dd.classList.remove("open");
+    await wait(500);
+
+    await move(navDash, 900);
+    await click();
+    nav("dash");
+    await wait(600);
+    setStep(3);
+    await wait(300);
+
+    /* 3c. Launch Rust */
+    await move(cardLaunch, 900, -130, 0);
+    cardLaunch.classList.add("hover");
+    await wait(400);
+    await click();
+    cardLaunch.classList.remove("hover");
+    cardLaunch.classList.add("dim");
+    log(START[0]);
     await wait(800);
-    lines[0].className = "ln ok";
-    lines[1].className = "ln busy";
-    await wait(1000);
-    lines[1].className = "ln ok";
-    lines[2].className = "ln busy";
-    await fill(launchBar, 1600);
-    lines[2].className = "ln ok";
+    status(true, false);
+    cardStop.classList.remove("dim");
+    log(START[1]);
+    await wait(450);
+    log(START[2]);
+    await wait(1100);
+    status(true, true);
+    log(START[3]);
     setStep(4);
-    await wait(2800);
+    await wait(3000);
 
     on(fade);
     await wait(600);
@@ -837,13 +1111,13 @@
     tbExplorer.classList.add("running");
     on(explorer);
     view("contents");
-    var row = q('[data-row="launcher"]');
-    select(row);
-    var p = centre(row);
-    place(p.x - 110, p.y, 0);
+    select(q('[data-row="launcher"]'));
     on(launch);
-    qa(".ln").forEach(function (l) { l.className = "ln ok"; });
-    bar(launchBar, 100);
+    BOOT.concat(START).forEach(function (l) { log(l); });
+    status(true, true);
+    cardStop.classList.remove("dim");
+    var p = centre(cardLaunch);
+    place(p.x - 130, p.y, 0);
     setStep(4);
     off(fade);
     sync();

@@ -218,6 +218,20 @@ If any plugin declares an `Order`, the server logs the final order.
 3. The legacy .NET Framework `csc.exe` (only supports old C# versions).
 4. Mono `mcs.exe`.
 
+### Recommended editors
+
+You don't need Visual Studio installed to write plugin sources, any text editor works since the server
+does the compiling. For a better experience (syntax highlighting, autocomplete, inline errors), open
+the `ClientPluginSources` folder as a project/folder in one of these:
+
+- **JetBrains Rider** - open `ClientPluginSources` as a folder, or create a lightweight `.csproj` inside
+  a plugin folder referencing the DLLs from `ClientSideReferences`/`References` to get full IntelliSense.
+- **Visual Studio Code** - open `ClientPluginSources` as a folder and install the C# extension (OmniSharp
+  or the C# Dev Kit) for syntax highlighting and basic IntelliSense.
+
+Either way, the server is still the one that compiles the `.cs` files into the DLL - these editors are
+only there to make writing the sources easier, they are not required to run the server.
+
 ### Quick test
 
 1. Start the server once so the folders are created.

@@ -137,6 +137,41 @@ public class HelloPlugin : RustBusterPlugin
 }
 ```
 
+### `// #require` example
+
+A plugin can depend on another plugin's compiled DLL, the same way Fougerite plugins `#require` each
+other. Put the directive on its own line, anywhere in a `.cs` file of the dependent plugin:
+
+`ClientPluginSources\HelloPlugin2\HelloPlugin2.cs`:
+
+```csharp
+// #require HelloPlugin
+using RustBuster2016.API;
+using UnityEngine;
+
+public class HelloPlugin2 : RustBusterPlugin
+{
+    public override string Name { get { return "HelloPlugin2"; } }
+    public override uint Order { get { return 20; } }   // HelloPlugin has Order 10, so it loads first
+
+    public override void Initialize()
+    {
+        Debug.Log("[HelloPlugin2] Initialized, HelloPlugin loaded before me");
+    }
+
+    public override void DeInitialize() { }
+}
+```
+
+- `HelloPlugin` (the required plugin) is compiled first, and its DLL is added as a reference when
+  compiling `HelloPlugin2`, so `HelloPlugin2` could use `HelloPlugin`'s public types directly if it
+  needed to.
+- The server sends `HelloPlugin` to clients before `HelloPlugin2`, regardless of the `Order` values,
+  because a plugin never loads before something it requires.
+- You can `#require` more than one plugin by adding more `// #require Name` lines.
+- The name can also point at a hand-placed DLL in `ClientPlugins` (a self-compiled plugin, see above).
+- Circular requirements are detected and logged. A plugin whose requirement failed to build is skipped.
+
 ### Load order
 
 Clients download and load plugins in the order the server sends them. The server decides it like this:
@@ -151,18 +186,6 @@ Clients download and load plugins in the order the server sends them. The server
 3. Hand-placed DLLs in `ClientPlugins` have no source to read, so they load first, alphabetically.
 
 If any plugin declares an `Order`, the server logs the final order.
-
-### `// #require`
-
-Put the directive on its own line in any `.cs` file of the plugin:
-
-```csharp
-// #require HelloPlugin
-```
-
-- The name is another source plugin folder, or a hand-placed DLL in `ClientPlugins`.
-- The required plugin is compiled first and its DLL is added as a reference, so you can use its types.
-- Circular requirements are detected and logged. A plugin whose requirement failed to build is skipped.
 
 ### Automatic recompilation
 
@@ -190,6 +213,9 @@ Put the directive on its own line in any `.cs` file of the plugin:
    `ClientPluginSources\ClientSideReferences`.
 3. Create `ClientPluginSources\HelloPlugin\HelloPlugin.cs` with the example above.
 4. `ClientPlugins\HelloPlugin.dll` should appear. If not, read `ClientPluginSources\.cache\HelloPlugin.log`.
+5. Optional: add `ClientPluginSources\HelloPlugin2\HelloPlugin2.cs` from the `// #require` example.
+   The server log should show `HelloPlugin` compiled before `HelloPlugin2`, and both DLLs should appear
+   in `ClientPlugins`.
 
 ### Where to go next
 - [`Settings-Ini-Reference.md`](Settings-Ini-Reference.md) - the `ClientPluginCompiler` setting.

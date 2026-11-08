@@ -94,6 +94,12 @@ they are not sent to clients.
 - **`ClientPluginSources\References`**: any other DLLs shared by several plugins.
 - **`ClientPluginSources\<PluginName>\References`**: DLLs used by a single plugin.
 
+**Server-side DLLs are not references.** Do not copy anything from the server's own `Managed` folder
+(`rust_server_Data\Managed`) into any of these folders. Client plugins run on the client, so they are
+compiled only against the client's DLLs. The server never adds its own DLLs (Fougerite, the server's
+`Assembly-CSharp`, `RustBuster2016Server`, ...) to the compiler. The compiler itself supplies the core
+framework library (`mscorlib`).
+
 Replacing a DLL in any of these folders triggers a recompile.
 
 Reference order (the first DLL wins when names are duplicated):

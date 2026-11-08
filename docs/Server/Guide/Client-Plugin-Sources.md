@@ -185,6 +185,18 @@ Clients download and load plugins in the order the server sends them. The server
    lowest `Order` of the plugins that need it.
 3. Hand-placed DLLs in `ClientPlugins` have no source to read, so they load first, alphabetically.
 
+**`// #require` always wins over `Order`.** `#require` is a hard rule, not a tie-breaker: no plugin is
+ever placed before a plugin it requires, no matter what `Order` either one declares. `Order` only
+decides the order *between plugins that are already free to be placed* (nothing left to wait for) - it
+never overrides a requirement. Concretely:
+
+- If `A` requires `B`, `B` always loads before `A`, even if `A` declares a lower `Order` than `B`.
+- A required plugin's own effective position is pulled down to the lowest `Order` among the plugins
+  that require it, so it is placed as early as its most eager dependent allows, but still always before
+  all of them.
+- Once the requirement graph is satisfied, `Order` (then name) breaks ties among whatever is next
+  eligible to load.
+
 If any plugin declares an `Order`, the server logs the final order.
 
 ### Automatic recompilation

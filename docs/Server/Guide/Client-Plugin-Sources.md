@@ -18,8 +18,9 @@ Both end up in `ClientPlugins` and are served to clients the same way:
    compiles them into `ClientPlugins\<PluginName>.dll` and recompiles whenever they change. Do not edit
    or place files by hand for these; the generated DLL is overwritten and deleted if the source folder
    is removed.
-2. **Self-compiled (manual):** build the DLL yourself (Visual Studio, `csc`, ...) against the client's
-   DLLs and drop it straight into `ClientPlugins`. The server never compiles, changes or deletes these.
+2. **Self-compiled (manual):** build the DLL yourself (Visual Studio, JetBrains Rider, Visual Studio
+   Code, `csc`, ...) against the client's DLLs and drop it straight into `ClientPlugins`. The server
+   never compiles, changes or deletes these.
 
 Plugins from sources can `// #require` self-compiled DLLs (see below).
 

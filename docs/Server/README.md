@@ -53,9 +53,14 @@ Fougerite module (a folder under `Modules`, an entry under `[Modules]` in `Fouge
 - **Writing a third-party module that hooks into RustBuster?** See
   [`Guide/Hooking-Into-RustBusterServer.md`](Guide/Hooking-Into-RustBusterServer.md) for a full
   walkthrough (detecting RustBuster safely, exchanging custom messages with a client plugin).
+- **Want to ship client plugins as `.cs` sources and let the server compile them?** See
+  [`Guide/Client-Plugin-Sources.md`](Guide/Client-Plugin-Sources.md) (folder layout, references,
+  `// #require`, the `Order` property and auto-recompile).
 - **Looking for the main hub class?** See [`Classes/API.md`](Classes/API.md) - every server-side event
   and most helper methods live there.
 - **Looking for a specific class?** See the [Classes](Classes/README.md) reference.
+- **Looking for what a `Settings.ini` option does?** See
+  [`Guide/Settings-Ini-Reference.md`](Guide/Settings-Ini-Reference.md).
 
 ### Layout
 
@@ -64,6 +69,8 @@ docs/Server/
   README.md                  <- you are here
   Guide/
     Hooking-Into-RustBusterServer.md  <- step by step example for third-party modules
+    Client-Plugin-Sources.md          <- compile client plugin .cs sources on the server
+    Settings-Ini-Reference.md         <- what every Settings.ini option does
   Classes/
     README.md                <- index of every documented class
     API.md                   <- the hub class: events, RustBusterUserAPI, downloadables
